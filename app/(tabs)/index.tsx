@@ -28,8 +28,17 @@ interface Destination {
   description: string;
   image: string;
   country: string;
+  city?: string;
   rating?: number;
   status?: string;
+  transportType?: string;
+  duration?: string;
+  price?: number;
+  schedule?: string[];
+  tags?: string[];
+  highlights?: string[];
+  tips?: string[];
+  reviewCount?: number;
 }
 
 export default function HomeScreen() {
@@ -121,9 +130,17 @@ export default function HomeScreen() {
           <View style={styles.metaItem}>
             <Feather name="map-pin" size={14} color={theme.textSecondary} />
             <Text style={[styles.metaText, { color: theme.textSecondary }]}>
-              {item.country}
+              {item.city || item.country}
             </Text>
           </View>
+          {item.transportType && (
+            <View style={styles.metaItem}>
+              <Feather name="navigation" size={14} color={theme.primary} />
+              <Text style={[styles.metaText, { color: theme.textSecondary }]}>
+                {item.transportType}
+              </Text>
+            </View>
+          )}
           {item.rating && (
             <View style={styles.metaItem}>
               <Feather name="star" size={14} color={theme.warning} />

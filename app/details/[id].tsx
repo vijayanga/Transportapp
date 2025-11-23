@@ -128,9 +128,17 @@ export default function DetailsScreen() {
           <View style={styles.metaItem}>
             <Feather name="map-pin" size={20} color={theme.primary} />
             <Text style={[styles.metaText, { color: theme.text }]}>
-              {destination.country}
+              {destination.city ? `${destination.city}, ${destination.country}` : destination.country}
             </Text>
           </View>
+          {destination.transportType && (
+            <View style={styles.metaItem}>
+              <Feather name="navigation" size={20} color={theme.primary} />
+              <Text style={[styles.metaText, { color: theme.text }]}>
+                {destination.transportType}
+              </Text>
+            </View>
+          )}
           {destination.rating && (
             <View style={styles.metaItem}>
               <Feather name="star" size={20} color={theme.warning} />
@@ -176,98 +184,261 @@ export default function DetailsScreen() {
           </View>
         )}
 
-        {destination.ingredients && destination.ingredients.length > 0 && (
+        {destination.highlights && destination.highlights.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              What to Expect
+              Highlights
             </Text>
-            {destination.ingredients
-              .slice(0, 5)
-              .map((item: string, index: number) => (
-                <View key={index} style={styles.listItem}>
-                  <Feather
-                    name="check-circle"
-                    size={16}
-                    color={theme.success}
-                  />
-                  <Text
-                    style={[
-                      styles.listItemText,
-                      { color: theme.textSecondary },
-                    ]}
-                  >
-                    {item}
-                  </Text>
-                </View>
-              ))}
+            {destination.highlights.map((item: string, index: number) => (
+              <View key={index} style={styles.listItem}>
+                <Feather name="check-circle" size={16} color={theme.success} />
+                <Text
+                  style={[
+                    styles.listItemText,
+                    { color: theme.textSecondary },
+                  ]}
+                >
+                  {item}
+                </Text>
+              </View>
+            ))}
           </View>
         )}
 
-        {destination.instructions && destination.instructions.length > 0 && (
+        {destination.tips && destination.tips.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
               Travel Tips
             </Text>
-            {destination.instructions
-              .slice(0, 3)
-              .map((instruction: string, index: number) => (
-                <View key={index} style={styles.instructionItem}>
-                  <View
-                    style={[
-                      styles.stepNumber,
-                      { backgroundColor: theme.primary },
-                    ]}
-                  >
-                    <Text style={styles.stepNumberText}>{index + 1}</Text>
-                  </View>
-                  <Text
-                    style={[
-                      styles.instructionText,
-                      { color: theme.textSecondary },
-                    ]}
-                  >
-                    {instruction}
-                  </Text>
+            {destination.tips.map((tip: string, index: number) => (
+              <View key={index} style={styles.instructionItem}>
+                <View
+                  style={[
+                    styles.stepNumber,
+                    { backgroundColor: theme.primary },
+                  ]}
+                >
+                  <Text style={styles.stepNumberText}>{index + 1}</Text>
                 </View>
-              ))}
+                <Text
+                  style={[
+                    styles.instructionText,
+                    { color: theme.textSecondary },
+                  ]}
+                >
+                  {tip}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {destination.schedule && destination.schedule.length > 0 && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Schedule
+            </Text>
+            {destination.schedule.map((time: string, index: number) => (
+              <View key={index} style={styles.listItem}>
+                <Feather name="calendar" size={16} color={theme.primary} />
+                <Text
+                  style={[
+                    styles.listItemText,
+                    { color: theme.textSecondary },
+                  ]}
+                >
+                  {time}
+                </Text>
+              </View>
+            ))}
           </View>
         )}
 
         <View style={styles.infoGrid}>
-          {destination.prepTime && (
+          {destination.duration && (
             <View style={[styles.infoCard, { backgroundColor: theme.card }]}>
               <Feather name="clock" size={24} color={theme.primary} />
               <Text style={[styles.infoValue, { color: theme.text }]}>
-                {destination.prepTime} min
+                {destination.duration}
               </Text>
               <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
                 Duration
               </Text>
             </View>
           )}
-          {destination.caloriesPerServing && (
+          {destination.price && (
             <View style={[styles.infoCard, { backgroundColor: theme.card }]}>
-              <Feather name="activity" size={24} color={theme.primary} />
+              <Feather name="dollar-sign" size={24} color={theme.primary} />
               <Text style={[styles.infoValue, { color: theme.text }]}>
-                {destination.caloriesPerServing}
+                ${destination.price}
               </Text>
               <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
-                Calories
+                Price
               </Text>
             </View>
           )}
-          {destination.servings && (
+          {destination.reviewCount && (
             <View style={[styles.infoCard, { backgroundColor: theme.card }]}>
               <Feather name="users" size={24} color={theme.primary} />
               <Text style={[styles.infoValue, { color: theme.text }]}>
-                {destination.servings}
+                {destination.reviewCount}
               </Text>
               <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
-                Servings
+                Reviews
               </Text>
             </View>
           )}
         </View>
+
+        {/* Real-time Bus Information */}
+        {destination.routeId && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Real-time Bus Information
+            </Text>
+            <View style={[styles.busInfoCard, { backgroundColor: theme.card }]}>
+              <View style={styles.busInfoRow}>
+                <Feather name="map-pin" size={20} color={theme.primary} />
+                <Text style={[styles.busInfoLabel, { color: theme.textSecondary }]}>
+                  Route ID:
+                </Text>
+                <Text style={[styles.busInfoValue, { color: theme.text }]}>
+                  {destination.routeId}
+                </Text>
+              </View>
+              
+              {destination.activeBuses !== undefined && (
+                <View style={styles.busInfoRow}>
+                  <Feather name="truck" size={20} color={theme.success} />
+                  <Text style={[styles.busInfoLabel, { color: theme.textSecondary }]}>
+                    Active Buses:
+                  </Text>
+                  <Text style={[styles.busInfoValue, { color: theme.text }]}>
+                    {destination.activeBuses}
+                  </Text>
+                </View>
+              )}
+
+              {destination.avgDeviation !== undefined && (
+                <View style={styles.busInfoRow}>
+                  <Feather name="activity" size={20} color={destination.avgDeviation > 5 ? theme.warning : theme.success} />
+                  <Text style={[styles.busInfoLabel, { color: theme.textSecondary }]}>
+                    Avg Delay:
+                  </Text>
+                  <Text style={[styles.busInfoValue, { color: theme.text }]}>
+                    {destination.avgDeviation > 0 ? '+' : ''}{destination.avgDeviation} min
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* Live Bus Positions */}
+        {destination.busPositions && destination.busPositions.length > 0 && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Live Bus Positions ({destination.busPositions.length})
+            </Text>
+            {destination.busPositions.slice(0, 5).map((bus: any, index: number) => (
+              <View
+                key={index}
+                style={[
+                  styles.busPositionCard,
+                  { backgroundColor: theme.card, borderColor: theme.border },
+                ]}
+              >
+                <View style={styles.busPositionHeader}>
+                  <View style={styles.busPositionLeft}>
+                    <Feather name="truck" size={20} color={theme.primary} />
+                    <Text style={[styles.busVehicleId, { color: theme.text }]}>
+                      Bus #{bus.VehicleID}
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.deviationBadge,
+                      {
+                        backgroundColor:
+                          bus.Deviation > 5
+                            ? theme.error + "20"
+                            : bus.Deviation < -5
+                            ? theme.success + "20"
+                            : theme.warning + "20",
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.deviationText,
+                        {
+                          color:
+                            bus.Deviation > 5
+                              ? theme.error
+                              : bus.Deviation < -5
+                              ? theme.success
+                              : theme.warning,
+                        },
+                      ]}
+                    >
+                      {bus.Deviation > 0 ? "+" : ""}
+                      {bus.Deviation} min
+                    </Text>
+                  </View>
+                </View>
+                
+                <Text style={[styles.busHeadsign, { color: theme.textSecondary }]}>
+                  <Feather name="navigation" size={14} color={theme.textSecondary} />
+                  {" "}{bus.DirectionText} to {bus.TripHeadsign}
+                </Text>
+                
+                <View style={styles.busPositionDetails}>
+                  <Text style={[styles.busDetailText, { color: theme.textSecondary }]}>
+                    <Feather name="map" size={12} color={theme.textSecondary} />
+                    {" "}Lat: {bus.Lat.toFixed(4)}, Lon: {bus.Lon.toFixed(4)}
+                  </Text>
+                  <Text style={[styles.busDetailText, { color: theme.textSecondary }]}>
+                    <Feather name="clock" size={12} color={theme.textSecondary} />
+                    {" "}Updated: {new Date(bus.DateTime).toLocaleTimeString()}
+                  </Text>
+                </View>
+              </View>
+            ))}
+            
+            {destination.busPositions.length > 5 && (
+              <Text style={[styles.moreText, { color: theme.textSecondary }]}>
+                + {destination.busPositions.length - 5} more buses on this route
+              </Text>
+            )}
+          </View>
+        )}
+
+        {/* Route Stops */}
+        {destination.routeDetails && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Route Stops
+            </Text>
+            {(destination.routeDetails.Direction0?.Stops || 
+              destination.routeDetails.Direction1?.Stops || [])
+              .slice(0, 8)
+              .map((stop: any, index: number) => (
+                <View key={index} style={styles.stopItem}>
+                  <View style={[styles.stopDot, { backgroundColor: theme.primary }]} />
+                  <View style={styles.stopContent}>
+                    <Text style={[styles.stopName, { color: theme.text }]}>
+                      {stop.Name}
+                    </Text>
+                    {stop.StopID && stop.StopID !== "0" && (
+                      <Text style={[styles.stopId, { color: theme.textSecondary }]}>
+                        Stop ID: {stop.StopID}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              ))}
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -425,5 +596,93 @@ const styles = StyleSheet.create({
   infoLabel: {
     fontSize: fontSize.xs,
     marginTop: spacing.xs,
+  },
+  busInfoCard: {
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginTop: spacing.sm,
+  },
+  busInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
+  busInfoLabel: {
+    fontSize: fontSize.sm,
+    marginLeft: spacing.sm,
+    marginRight: spacing.xs,
+  },
+  busInfoValue: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
+  },
+  busPositionCard: {
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    marginBottom: spacing.md,
+  },
+  busPositionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
+  busPositionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  busVehicleId: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
+    marginLeft: spacing.sm,
+  },
+  deviationBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+  },
+  deviationText: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
+  },
+  busHeadsign: {
+    fontSize: fontSize.sm,
+    marginBottom: spacing.sm,
+  },
+  busPositionDetails: {
+    gap: spacing.xs,
+  },
+  busDetailText: {
+    fontSize: fontSize.xs,
+  },
+  moreText: {
+    fontSize: fontSize.sm,
+    textAlign: "center",
+    fontStyle: "italic",
+    marginTop: spacing.sm,
+  },
+  stopItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: spacing.md,
+  },
+  stopDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginTop: 4,
+    marginRight: spacing.md,
+  },
+  stopContent: {
+    flex: 1,
+  },
+  stopName: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.medium,
+    marginBottom: spacing.xs,
+  },
+  stopId: {
+    fontSize: fontSize.xs,
   },
 });
