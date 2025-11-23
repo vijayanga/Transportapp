@@ -1,24 +1,60 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import React, { useEffect } from 'react';
+import { Provider } from 'react-redux';
+import { store } from '../store';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { loadUserFromStorage } from '../store/authSlice';
+import { loadFavorites } from '../store/favoritesSlice';
+import { loadTheme } from '../store/themeSlice';
+import { ActivityIndicator, View } from 'react-native';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+function AppInitializer({ children }: { children: React.ReactNode }) {
+  const dispatch = useAppDispatch();
+  const isLoading = useAppSelector((state) => state.auth.isLoading);
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+  useEffect(() => {
+    const initializeApp = async () => {
+      await Promise.all([
+        dispatch(loadUserFromStorage()),
+        dispatch(loadFavorites()),
+        dispatch(loadTheme()),
+      ]);
+    };
+
+    initializeApp();
+  }, [dispatch]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
+  return <>{children}</>;
+}
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Provider store={store}>
+      <AppInitializer>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="login" />
+          <Stack.Screen name="register" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen 
+            name="details/[id]" 
+            options={{
+              headerShown: true,
+              title: 'Details',
+              headerBackTitle: 'Back',
+            }}
+          />
+        </Stack>
+      </AppInitializer>
+    </Provider>
   );
 }
