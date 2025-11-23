@@ -7,6 +7,7 @@ This app now uses **TransportAPI** (https://www.transportapi.com/) to provide co
 ### Features
 
 #### 1. Bus Services
+
 - **Real-time bus services** across major UK cities
 - **Live departure boards** with accurate ETAs
 - **Route information** including all stops and directions
@@ -14,6 +15,7 @@ This app now uses **TransportAPI** (https://www.transportapi.com/) to provide co
 - **Service status** and disruption alerts
 
 #### 2. Train Stations
+
 - **Major railway stations** (Paddington, Victoria, Waterloo, Kings Cross, London Bridge)
 - **Live departure/arrival times** from National Rail
 - **Multi-operator support** (GWR, LNER, South Western Railway, etc.)
@@ -21,6 +23,7 @@ This app now uses **TransportAPI** (https://www.transportapi.com/) to provide co
 - **Destination tracking** for all services
 
 #### 3. Bus Stops
+
 - **Individual bus stop timetables**
 - **Real-time arrival predictions**
 - **Multiple route tracking** at each stop
@@ -28,6 +31,7 @@ This app now uses **TransportAPI** (https://www.transportapi.com/) to provide co
 - **Stop-specific information** (bearing, indicator, locality)
 
 #### 4. Places Search
+
 - **Intelligent search** across all transport types
 - **Autocomplete support** for locations
 - **Fuzzy matching** for station/stop names
@@ -35,6 +39,7 @@ This app now uses **TransportAPI** (https://www.transportapi.com/) to provide co
 - **Geospatial filtering** with lat/lon coordinates
 
 #### 5. Journey Planning
+
 - **Multi-modal journey planning**
 - **Step-by-step directions**
 - **Real-time route updates**
@@ -44,61 +49,66 @@ This app now uses **TransportAPI** (https://www.transportapi.com/) to provide co
 ### API Endpoints Used
 
 #### Bus Data
+
 ```typescript
 // Get bus services (collection)
 transportAPI.getBusServices({
-  operator: 'GAHL',  // Optional: filter by operator code
-  line_name: '11',   // Optional: specific route
-  lat: 51.5,         // Optional: near location
+  operator: "GAHL", // Optional: filter by operator code
+  line_name: "11", // Optional: specific route
+  lat: 51.5, // Optional: near location
   lon: -0.1,
-  limit: 25
-})
+  limit: 25,
+});
 
 // Get bus stop timetable (live departures)
-transportAPI.getBusStopTimetable('490014378M', {
+transportAPI.getBusStopTimetable("490014378M", {
   limit: 25,
-  live: true  // Enable real-time data
-})
+  live: true, // Enable real-time data
+});
 ```
 
 #### Train Data
+
 ```typescript
 // Get train station timetable
-transportAPI.getTrainStationTimetable('crs:PAD', {
-  datetime: '2025-01-15T09:00:00',
+transportAPI.getTrainStationTimetable("crs:PAD", {
+  datetime: "2025-01-15T09:00:00",
   limit: 25,
-  live: true  // Enable real-time updates
-})
+  live: true, // Enable real-time updates
+});
 ```
 
 #### Search
+
 ```typescript
 // Search for places
-transportAPI.searchPlaces('Paddington', {
-  type: ['train_station', 'bus_stop'],
+transportAPI.searchPlaces("Paddington", {
+  type: ["train_station", "bus_stop"],
   lat: 51.5,
   lon: -0.1,
-  limit: 10
-})
+  limit: 10,
+});
 ```
 
 #### Journey Planning
+
 ```typescript
 // Plan a journey
 transportAPI.getJourneyPlan(
-  'lonlat:-0.134649,51.529258',  // From
-  'lonlat:-0.088780,51.506383',  // To
+  "lonlat:-0.134649,51.529258", // From
+  "lonlat:-0.088780,51.506383", // To
   {
-    date: '2025-01-15',
-    time: '09:00',
-    modes: ['bus', 'train', 'tube']
+    date: "2025-01-15",
+    time: "09:00",
+    modes: ["bus", "train", "tube"],
   }
-)
+);
 ```
 
 ### Data Transformation
 
 #### Bus Services → Destinations
+
 ```typescript
 {
   id: 1,
@@ -117,6 +127,7 @@ transportAPI.getJourneyPlan(
 ```
 
 #### Train Stations → Destinations
+
 ```typescript
 {
   id: 1,
@@ -137,6 +148,7 @@ transportAPI.getJourneyPlan(
 ```
 
 #### Bus Stops → Destinations
+
 ```typescript
 {
   id: 1,
@@ -157,17 +169,19 @@ transportAPI.getJourneyPlan(
 ### API Credentials
 
 #### Get Your Own API Key
+
 1. Visit https://www.transportapi.com/
 2. Sign up for a free account
 3. Get your `app_id` and `app_key`
 4. Update in `services/api.ts`:
 
 ```typescript
-const TRANSPORT_API_ID = 'your-app-id';
-const TRANSPORT_API_KEY = 'your-app-key';
+const TRANSPORT_API_ID = "your-app-id";
+const TRANSPORT_API_KEY = "your-app-key";
 ```
 
 #### Free Tier Limits
+
 - **1,000 requests/day** (free tier)
 - **Up to 25 results** per request
 - **Real-time data** included
@@ -176,6 +190,7 @@ const TRANSPORT_API_KEY = 'your-app-key';
 ### Data Sources
 
 TransportAPI aggregates data from:
+
 - **National Rail** (train schedules and real-time updates)
 - **TfL** (London buses and tubes)
 - **Local bus operators** across the UK
@@ -210,12 +225,12 @@ try {
   const data = await transportAPI.getBusServices();
   if (!data) {
     // Handle API failure
-    console.warn('API returned no data');
+    console.warn("API returned no data");
     return [];
   }
   // Process data
 } catch (error) {
-  console.error('API error:', error);
+  console.error("API error:", error);
   return [];
 }
 ```
@@ -223,6 +238,7 @@ try {
 ### Example Screens
 
 #### Home Screen (Destinations List)
+
 - Shows 10 bus services + 5 train stations
 - Real-time status for each service
 - Rating based on service reliability
@@ -230,6 +246,7 @@ try {
 - Quick filters by transport type
 
 #### Details Screen
+
 - Live departure board (next 20 departures)
 - Route map with all stops
 - Service alerts and disruptions
@@ -239,6 +256,7 @@ try {
 - Journey planning integration
 
 #### Search Screen
+
 - Search bus stops by name or number
 - Find train stations across UK
 - Filter by location (nearby stops)
@@ -248,12 +266,14 @@ try {
 ### Performance
 
 #### Caching Strategy
+
 - Cache destinations for 5 minutes
 - Refresh live departures every 30 seconds
 - Store frequently accessed stations/stops
 - Background updates for active routes
 
 #### Optimization
+
 - Parallel API requests for multiple services
 - Limit results to 25 items per call
 - Use pagination for large datasets
@@ -262,10 +282,12 @@ try {
 ### Migration from Previous APIs
 
 #### Removed APIs
+
 - ❌ **WMATA** (Washington DC Metro) - quota limits
 - ❌ **TfL Direct API** - rate limiting
 
 #### Why TransportAPI?
+
 - ✅ **No quota limits** on free tier (1000 req/day)
 - ✅ **Comprehensive UK coverage** (not just London)
 - ✅ **Real-time data** from National Rail
@@ -277,17 +299,20 @@ try {
 ### Troubleshooting
 
 #### No data showing?
+
 1. Check API credentials in `services/api.ts`
 2. Verify network connection
 3. Check console for error messages
 4. Ensure API key is active (not expired)
 
 #### Wrong location data?
+
 - TransportAPI uses UK coordinates (WGS84)
 - Format: `lonlat:longitude,latitude`
 - Example: `lonlat:-0.1,51.5` (London)
 
 #### Live data not updating?
+
 - Ensure `live: true` is set in API calls
 - Check if service supports real-time data
 - Some rural services may not have GPS tracking
@@ -309,6 +334,7 @@ When using TransportAPI data, include attribution:
 ```
 
 Required acknowledgements:
+
 - National Rail (train data)
 - Transport for London (London transport)
 - Bus Open Data Service (bus data)
