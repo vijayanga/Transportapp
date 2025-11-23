@@ -3,27 +3,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface Destination {
   id: number;
-  routeId?: string; // WMATA route ID (e.g., "B30", "10A")
   name: string;
   description: string;
   image: string;
   country: string;
-  city?: string;
   rating?: number;
   status?: string;
-  transportType?: string;
-  duration?: string;
-  price?: number;
-  schedule?: string[];
-  tags?: string[];
-  highlights?: string[];
-  tips?: string[];
-  reviewCount?: number;
-  // WMATA-specific fields
-  busPositions?: any[];
-  routeDetails?: any;
-  activeBuses?: number;
-  avgDeviation?: number;
 }
 
 interface FavoritesState {
