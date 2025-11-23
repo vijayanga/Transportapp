@@ -38,99 +38,106 @@ export const authAPI = {
   },
 };
 
-// Fallback static data in case WMATA API fails
-const FALLBACK_DESTINATIONS = [
-  {
-    id: 1,
-    name: 'Paris Metro Tour',
-    description: 'Experience the iconic Paris Metro system and explore the City of Light through its extensive underground network.',
-    image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800',
-    country: 'France',
-    city: 'Paris',
-    rating: 4.8,
-    status: 'Popular',
-    transportType: 'Metro',
-    duration: '4 hours',
-    price: 25,
-    schedule: ['Daily', '9:00 AM - 6:00 PM'],
-    tags: ['Metro', 'City Tour', 'Culture', 'History'],
-    highlights: ['Eiffel Tower Station', 'Louvre Museum', 'Champs-Élysées', 'Historic Architecture', 'Local Culture'],
-    tips: ['Buy a day pass for unlimited travel', 'Avoid rush hours (8-9 AM, 5-7 PM)', 'Keep belongings secure in crowded trains'],
-    reviewCount: 1250,
+// Transport for London (TfL) API - Free, no authentication required
+const TFL_API_BASE_URL = 'https://api.tfl.gov.uk';
+
+// TfL Line API to get London Underground/Bus lines
+const tflAPI = {
+  getLines: async (mode: string = 'tube,bus') => {
+    try {
+      const response = await axios.get(`${TFL_API_BASE_URL}/Line/Mode/${mode}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching TfL lines:', error);
+      return [];
+    }
   },
-  {
-    id: 2,
-    name: 'Tokyo Bullet Train Experience',
-    description: 'Ride the legendary Shinkansen bullet train and witness Japanese engineering excellence at 320 km/h.',
-    image: 'https://images.unsplash.com/photo-1548898395-16c8f69c0669?w=800',
-    country: 'Japan',
-    city: 'Tokyo',
-    rating: 4.9,
-    status: 'Popular',
-    transportType: 'Train',
-    duration: '3 hours',
-    price: 150,
-    schedule: ['Daily', 'Multiple departures'],
-    tags: ['High-Speed Train', 'Technology', 'Scenic', 'Comfort'],
-    highlights: ['Mount Fuji Views', 'Onboard Service', 'Speed Experience', 'Modern Stations', 'Punctuality'],
-    tips: ['Book JR Pass in advance', 'Reserve window seats for views', 'Try ekiben (station lunch boxes)'],
-    reviewCount: 2100,
+
+  getLineStatus: async (lineId: string) => {
+    try {
+      const response = await axios.get(`${TFL_API_BASE_URL}/Line/${lineId}/Status`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching TfL line status:', error);
+      return [];
+    }
   },
-  {
-    id: 3,
-    name: 'London Double-Decker Bus Tour',
-    description: 'Hop on the iconic red double-decker buses and discover London\'s famous landmarks from the top deck.',
-    image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800',
+
+  getArrivals: async (lineId: string) => {
+    try {
+      const response = await axios.get(`${TFL_API_BASE_URL}/Line/${lineId}/Arrivals`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching TfL arrivals:', error);
+      return [];
+    }
+  },
+};
+
+// Transform TfL line to destination format
+const transformTfLLineToDestination = (line: any, index: number): any => {
+  const lineId = line.id || '';
+  const lineName = line.name || 'Unknown Line';
+  const modeName = line.modeName || 'Transport';
+  
+  const transportTypeMap: any = {
+    'tube': 'Metro',
+    'bus': 'Bus',
+    'overground': 'Train',
+    'dlr': 'Light Rail',
+    'tram': 'Tram',
+    'river-bus': 'Boat',
+  };
+
+  const transportType = transportTypeMap[modeName] || 'Transport';
+  
+  const lineStatuses = line.lineStatuses || [];
+  const statusSeverity = lineStatuses[0]?.statusSeverity || 10;
+  const statusDescription = lineStatuses[0]?.statusSeverityDescription || 'Good Service';
+  
+  let status = 'Active';
+  if (statusSeverity >= 10) status = 'Popular';
+  else if (statusSeverity >= 6) status = 'Active';
+  else status = 'Delayed';
+
+  const routeSections = line.routeSections || [];
+  const highlights = routeSections.length > 0
+    ? routeSections.slice(0, 5).map((section: any) => section.name || 'Station')
+    : [lineName, 'Multiple stops', 'Real-time updates', 'Regular service', 'City transport'];
+
+  const tips = [
+    `${lineName} provides regular service across London`,
+    `Current status: ${statusDescription}`,
+    'Use contactless payment or Oyster card',
+    'Check TfL app for real-time updates',
+  ];
+
+  return {
+    id: index + 1,
+    routeId: lineId,
+    name: lineName,
+    description: `${lineName} - ${modeName} service in London. Status: ${statusDescription}. Part of Transport for London network.`,
+    image: modeName === 'tube' 
+      ? 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800'
+      : 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800',
     country: 'United Kingdom',
     city: 'London',
-    rating: 4.6,
-    status: 'Active',
-    transportType: 'Bus',
-    duration: '2.5 hours',
-    price: 35,
-    schedule: ['Daily', 'Every 30 minutes'],
-    tags: ['Bus', 'Sightseeing', 'Iconic', 'Hop-on Hop-off'],
-    highlights: ['Big Ben', 'Tower Bridge', 'Buckingham Palace', 'Westminster Abbey', 'Thames Views'],
-    tips: ['Sit on the top deck for best views', 'Use contactless payment', 'Download route maps'],
-    reviewCount: 980,
-  },
-  {
-    id: 4,
-    name: 'New York Subway Adventure',
-    description: 'Navigate the world\'s largest subway system and experience the heartbeat of New York City.',
-    image: 'https://images.unsplash.com/photo-1518391846015-55a9cc003b25?w=800',
-    country: 'USA',
-    city: 'New York',
-    rating: 4.3,
-    status: 'Active',
-    transportType: 'Subway',
-    duration: '5 hours',
-    price: 33,
-    schedule: ['24/7', 'Unlimited day pass'],
-    tags: ['Subway', 'Urban', '24-Hour', 'Cultural'],
-    highlights: ['Times Square Station', 'Grand Central', 'Brooklyn Bridge', 'Central Park', 'Street Performers'],
-    tips: ['Get a MetroCard for convenience', 'Watch for express vs local trains', 'Keep track of your belongings'],
-    reviewCount: 1500,
-  },
-  {
-    id: 5,
-    name: 'Singapore MRT City Loop',
-    description: 'Experience one of the world\'s most efficient metro systems and explore Singapore\'s diverse neighborhoods.',
-    image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800',
-    country: 'Singapore',
-    city: 'Singapore',
-    rating: 4.8,
-    status: 'Active',
-    transportType: 'MRT',
-    duration: '3 hours',
-    price: 20,
-    schedule: ['Daily', '5:30 AM - 12:00 AM'],
-    tags: ['Metro', 'Modern', 'Clean', 'Efficient'],
-    highlights: ['Marina Bay Sands', 'Gardens by the Bay', 'Chinatown', 'Little India', 'Orchard Road'],
-    tips: ['Get an EZ-Link card', 'System is very clean and efficient', 'No eating or drinking allowed'],
-    reviewCount: 1320,
-  },
-];
+    rating: Math.min(5, 4.0 + (statusSeverity / 10)),
+    status,
+    transportType,
+    duration: 'Varies by route',
+    price: 2.80,
+    schedule: ['Daily', '5:00 AM - 1:00 AM'],
+    tags: [transportType, 'Public Transit', 'TfL', 'London'],
+    highlights,
+    tips,
+    reviewCount: Math.floor(Math.random() * 1000) + 500,
+    tflLineId: lineId,
+    lineStatus: statusDescription,
+    statusSeverity,
+    modeName,
+  };
+};
 
 // WMATA Bus API - Real-time bus data for Washington DC Metro area
 // Types based on WMATA API response structure
@@ -335,95 +342,105 @@ const transformBusRouteToDestination = (
 export const destinationsAPI = {
   // Get bus routes as destinations
   getDestinations: async () => {
+    // Try WMATA first
     try {
       console.log('Fetching WMATA bus routes...');
       
-      // Fetch all routes
       const routes = await busAPI.getRoutes();
       
-      if (!routes || routes.length === 0) {
-        console.warn('No routes returned from WMATA API, using fallback data');
-        return FALLBACK_DESTINATIONS;
+      if (routes && routes.length > 0) {
+        console.log(`Found ${routes.length} WMATA routes, getting positions for top 15...`);
+        
+        const popularRoutes = routes.slice(0, 15);
+        
+        const positionsPromises = popularRoutes.map(route => 
+          busAPI.getBusPositions(route.RouteID).catch(err => {
+            console.log(`No positions for route ${route.RouteID}`);
+            return [];
+          })
+        );
+        const allPositions = await Promise.all(positionsPromises);
+        
+        const destinations = popularRoutes.map((route, index) => 
+          transformBusRouteToDestination(
+            route,
+            index,
+            undefined,
+            allPositions[index]
+          )
+        );
+        
+        console.log(`Successfully loaded ${destinations.length} WMATA routes`);
+        return destinations.sort((a, b) => (b.activeBuses || 0) - (a.activeBuses || 0));
       }
-      
-      console.log(`Found ${routes.length} routes, getting positions for top 15...`);
-      
-      // Get a sample of popular routes (limit to avoid rate limiting)
-      const popularRoutes = routes.slice(0, 15);
-      
-      // Fetch positions for all routes in parallel
-      const positionsPromises = popularRoutes.map(route => 
-        busAPI.getBusPositions(route.RouteID).catch(err => {
-          console.log(`No positions for route ${route.RouteID}`);
-          return [];
-        })
-      );
-      const allPositions = await Promise.all(positionsPromises);
-      
-      // Transform to destination format
-      const destinations = popularRoutes.map((route, index) => 
-        transformBusRouteToDestination(
-          route,
-          index,
-          undefined,
-          allPositions[index]
-        )
-      );
-      
-      console.log(`Successfully transformed ${destinations.length} routes`);
-      
-      // Sort by number of active buses (most active first)
-      return destinations.sort((a, b) => (b.activeBuses || 0) - (a.activeBuses || 0));
     } catch (error: any) {
-      console.error('Error fetching WMATA destinations:', error);
-      console.error('Error details:', error.message);
-      console.log('Using fallback static destinations instead');
-      
-      // Return fallback data on error instead of empty array
-      return FALLBACK_DESTINATIONS;
+      console.warn('WMATA API failed:', error.message);
     }
+
+    // Fallback to TfL API (free, no authentication)
+    try {
+      console.log('Fetching Transport for London (TfL) routes as fallback...');
+      
+      const lines = await tflAPI.getLines('tube,bus,overground');
+      
+      if (lines && lines.length > 0) {
+        console.log(`Found ${lines.length} TfL lines`);
+        
+        const popularLines = lines.slice(0, 15);
+        
+        const destinations = popularLines.map((line: any, index: number) => 
+          transformTfLLineToDestination(line, index)
+        );
+        
+        console.log(`Successfully loaded ${destinations.length} TfL routes`);
+        return destinations;
+      }
+    } catch (error: any) {
+      console.error('TfL API also failed:', error.message);
+    }
+
+    throw new Error('Unable to fetch transport data from any API');
   },
   
   getDestinationById: async (id: number) => {
+    // Try WMATA first
     try {
-      console.log(`Fetching details for destination ID: ${id}`);
+      console.log(`Fetching WMATA details for destination ID: ${id}`);
       
-      // First get all routes to find the one matching the ID
       const routes = await busAPI.getRoutes();
-      const route = routes[id - 1]; // ID is 1-indexed
+      const route = routes[id - 1];
       
-      if (!route) {
-        console.warn(`Route not found for ID ${id}, using fallback data`);
-        const fallbackDest = FALLBACK_DESTINATIONS.find(d => d.id === id);
-        if (fallbackDest) return fallbackDest;
-        throw new Error('Destination not found');
+      if (route) {
+        const [details, positions] = await Promise.all([
+          busAPI.getRouteDetails(route.RouteID).catch(() => undefined),
+          busAPI.getBusPositions(route.RouteID).catch(() => []),
+        ]);
+        
+        return transformBusRouteToDestination(route, id - 1, details, positions);
       }
-      
-      // Fetch detailed information
-      const [details, positions] = await Promise.all([
-        busAPI.getRouteDetails(route.RouteID).catch(err => {
-          console.log(`Failed to get route details: ${err.message}`);
-          return undefined;
-        }),
-        busAPI.getBusPositions(route.RouteID).catch(err => {
-          console.log(`Failed to get bus positions: ${err.message}`);
-          return [];
-        }),
-      ]);
-      
-      return transformBusRouteToDestination(route, id - 1, details, positions);
     } catch (error: any) {
-      console.error('Error fetching destination by ID:', error);
-      console.error('Error details:', error.message);
-      
-      // Try to return fallback data
-      const fallbackDest = FALLBACK_DESTINATIONS.find(d => d.id === id);
-      if (fallbackDest) {
-        console.log('Returning fallback destination');
-        return fallbackDest;
-      }
-      
-      throw error;
+      console.warn(`WMATA failed for ID ${id}:`, error.message);
     }
+
+    // Fallback to TfL API
+    try {
+      console.log(`Fetching TfL details for destination ID: ${id}`);
+      
+      const lines = await tflAPI.getLines('tube,bus,overground');
+      const line = lines[id - 1];
+      
+      if (line) {
+        const statusData = await tflAPI.getLineStatus(line.id).catch(() => []);
+        if (statusData.length > 0) {
+          line.lineStatuses = statusData[0].lineStatuses;
+        }
+        
+        return transformTfLLineToDestination(line, id - 1);
+      }
+    } catch (error: any) {
+      console.error(`TfL also failed for ID ${id}:`, error.message);
+    }
+
+    throw new Error('Destination not found in any API');
   },
 };
