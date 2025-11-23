@@ -6,11 +6,10 @@ const AUTH_API_BASE_URL = 'https://dummyjson.com';
 // WMATA (Washington Metropolitan Area Transit Authority) Bus API
 const WMATA_API_BASE_URL = 'https://api.wmata.com/Bus.svc/json';
 
-// You need to get your own API key from: https://developer.wmata.com/
-// For demo purposes, using a demo key (limited requests)
-// Note: In React Native, environment variables need expo-constants or react-native-dotenv
-// For now, using direct key for simplicity
-const WMATA_API_KEY = 'e13626d03d8e4c03ac07f95541b3091b'; // Demo key - Replace with your own
+// Note: WMATA demo key has quota limits and may be exceeded
+// Get your own free key from: https://developer.wmata.com/
+// For now, we're using TfL (Transport for London) as primary API
+const WMATA_API_KEY = ''; // Disabled due to quota - set your own key here
 
 // Authentication API (using DummyJSON)
 export const authAPI = {
@@ -474,44 +473,52 @@ const transformBusRouteToDestination = (
 export const destinationsAPI = {
   // Get bus routes as destinations
   getDestinations: async () => {
-    // Try WMATA first
-    try {
-      console.log('Fetching WMATA bus routes...');
-      
-      const routes = await busAPI.getRoutes();
-      
-      if (routes && routes.length > 0) {
-        console.log(`Found ${routes.length} WMATA routes, getting positions for top 15...`);
+    // Try WMATA only if API key is configured
+    if (WMATA_API_KEY) {
+      try {
+        console.log('Fetching WMATA bus routes...');
         
-        const popularRoutes = routes.slice(0, 15);
+        const routes = await busAPI.getRoutes();
         
-        const positionsPromises = popularRoutes.map(route => 
-          busAPI.getBusPositions(route.RouteID).catch(err => {
-            console.log(`No positions for route ${route.RouteID}`);
-            return [];
-          })
-        );
-        const allPositions = await Promise.all(positionsPromises);
-        
-        const destinations = popularRoutes.map((route, index) => 
-          transformBusRouteToDestination(
-            route,
-            index,
-            undefined,
-            allPositions[index]
-          )
-        );
-        
-        console.log(`Successfully loaded ${destinations.length} WMATA routes`);
-        return destinations.sort((a, b) => (b.activeBuses || 0) - (a.activeBuses || 0));
+        if (routes && routes.length > 0) {
+          console.log(`Found ${routes.length} WMATA routes, getting positions for top 15...`);
+          
+          const popularRoutes = routes.slice(0, 15);
+          
+          const positionsPromises = popularRoutes.map(route => 
+            busAPI.getBusPositions(route.RouteID).catch(err => {
+              console.log(`No positions for route ${route.RouteID}`);
+              return [];
+            })
+          );
+          const allPositions = await Promise.all(positionsPromises);
+          
+          const destinations = popularRoutes.map((route, index) => 
+            transformBusRouteToDestination(
+              route,
+              index,
+              undefined,
+              allPositions[index]
+            )
+          );
+          
+          console.log(`Successfully loaded ${destinations.length} WMATA routes`);
+          return destinations.sort((a, b) => (b.activeBuses || 0) - (a.activeBuses || 0));
+        }
+      } catch (error: any) {
+        if (error.response?.status === 403) {
+          console.warn('WMATA API quota exceeded - switching to TfL');
+        } else {
+          console.warn('WMATA API failed:', error.message);
+        }
       }
-    } catch (error: any) {
-      console.warn('WMATA API failed:', error.message);
+    } else {
+      console.log('WMATA API key not configured, using TfL as primary source');
     }
 
-    // Fallback to TfL API (free, no authentication)
+    // Use TfL API (London Transport - free, no key required)
     try {
-      console.log('Fetching Transport for London (TfL) routes as fallback...')
+      console.log('Fetching Transport for London (TfL) routes...');
       
       const lines = await tflAPI.getLines('tube,bus,overground');
       
@@ -535,37 +542,43 @@ export const destinationsAPI = {
           transformTfLLineToDestination(data.line, index, data.routeSeq, data.disruptions)
         );
         
-        console.log(`Successfully loaded ${destinations.length} TfL routes with detailed info`);
+        console.log(`✅ Successfully loaded ${destinations.length} London transport routes`);
         return destinations;
       }
     } catch (error: any) {
-      console.error('TfL API also failed:', error.message);
+      console.error('❌ TfL API failed:', error.message);
     }
 
     throw new Error('Unable to fetch transport data from any API');
   },
   
   getDestinationById: async (id: number) => {
-    // Try WMATA first
-    try {
-      console.log(`Fetching WMATA details for destination ID: ${id}`);
-      
-      const routes = await busAPI.getRoutes();
-      const route = routes[id - 1];
-      
-      if (route) {
-        const [details, positions] = await Promise.all([
-          busAPI.getRouteDetails(route.RouteID).catch(() => undefined),
-          busAPI.getBusPositions(route.RouteID).catch(() => []),
-        ]);
+    // Try WMATA only if API key is configured
+    if (WMATA_API_KEY) {
+      try {
+        console.log(`Fetching WMATA details for destination ID: ${id}`);
         
-        return transformBusRouteToDestination(route, id - 1, details, positions);
+        const routes = await busAPI.getRoutes();
+        const route = routes[id - 1];
+        
+        if (route) {
+          const [details, positions] = await Promise.all([
+            busAPI.getRouteDetails(route.RouteID).catch(() => undefined),
+            busAPI.getBusPositions(route.RouteID).catch(() => []),
+          ]);
+          
+          return transformBusRouteToDestination(route, id - 1, details, positions);
+        }
+      } catch (error: any) {
+        if (error.response?.status === 403) {
+          console.warn(`WMATA quota exceeded for ID ${id}`);
+        } else {
+          console.warn(`WMATA failed for ID ${id}:`, error.message);
+        }
       }
-    } catch (error: any) {
-      console.warn(`WMATA failed for ID ${id}:`, error.message);
     }
 
-    // Fallback to TfL API
+    // Use TfL API
     try {
       console.log(`Fetching TfL details for destination ID: ${id}`);
       
@@ -587,7 +600,7 @@ export const destinationsAPI = {
         return transformTfLLineToDestination(line, id - 1, routeSeq, disruptions);
       }
     } catch (error: any) {
-      console.error(`TfL also failed for ID ${id}:`, error.message);
+      console.error(`❌ TfL failed for ID ${id}:`, error.message);
     }
 
     throw new Error('Destination not found in any API');
