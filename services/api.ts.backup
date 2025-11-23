@@ -1,0 +1,619 @@
+import axios from 'axios';
+
+// DummyJSON for authentication only
+const AUTH_API_BASE_URL = 'https://dummyjson.com';
+
+// TransportAPI - UK Transport Data
+const TRANSPORT_API_BASE_URL = 'https://transportapi.com/v3/uk';
+
+// Get your own API credentials from: https://www.transportapi.com/
+const TRANSPORT_API_ID = '42d7d1da';
+const TRANSPORT_API_KEY = '460657268a71709042d93af1d09de02a';
+
+// Authentication API (using DummyJSON)
+export const authAPI = {
+  login: async (username: string, password: string) => {
+    const response = await axios.post(`${AUTH_API_BASE_URL}/auth/login`, {
+      username,
+      password,
+    });
+    const data = response.data;
+    return {
+      ...data,
+      token: data.accessToken || data.token || 'demo-token-' + Date.now(),
+    };
+  },
+  
+  register: async (userData: any) => {
+    return {
+      id: Math.floor(Math.random() * 1000),
+      username: userData.username,
+      email: userData.email,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      token: 'demo-token-' + Date.now(),
+    };
+  },
+};
+
+// Transport for London (TfL) API - Free, no authentication required
+const TFL_API_BASE_URL = 'https://api.tfl.gov.uk';
+
+// TfL Line API to get London Underground/Bus lines
+const tflAPI = {
+  getLines: async (mode: string = 'tube,bus') => {
+    try {
+      const response = await axios.get(`${TFL_API_BASE_URL}/Line/Mode/${mode}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching TfL lines:', error);
+      return [];
+    }
+  },
+
+  getLineStatus: async (lineId: string) => {
+    try {
+      const response = await axios.get(`${TFL_API_BASE_URL}/Line/${lineId}/Status`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching TfL line status:', error);
+      return [];
+    }
+  },
+
+  getArrivals: async (lineId: string) => {
+    try {
+      const response = await axios.get(`${TFL_API_BASE_URL}/Line/${lineId}/Arrivals`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching TfL arrivals:', error);
+      return [];
+    }
+  },
+
+  getRouteSequence: async (lineId: string) => {
+    try {
+      const response = await axios.get(`${TFL_API_BASE_URL}/Line/${lineId}/Route/Sequence/all`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching TfL route sequence:', error);
+      return null;
+    }
+  },
+
+  getDisruptions: async (lineId: string) => {
+    try {
+      const response = await axios.get(`${TFL_API_BASE_URL}/Line/${lineId}/Disruption`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching TfL disruptions:', error);
+      return [];
+    }
+  },
+};
+
+// Unique images for different transport lines
+const getLineImage = (lineId: string, modeName: string): string => {
+  const imageMap: { [key: string]: string } = {
+    // London Underground lines - unique images
+    'bakerloo': 'https://images.unsplash.com/photo-1543716091-a840c05249ec?w=800',
+    'central': 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800',
+    'circle': 'https://images.unsplash.com/photo-1520096449544-54ab7d54e8fd?w=800',
+    'district': 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800',
+    'hammersmith-city': 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=800',
+    'jubilee': 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=800',
+    'metropolitan': 'https://images.unsplash.com/photo-1590649880765-91b1956b8276?w=800',
+    'northern': 'https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?w=800',
+    'piccadilly': 'https://images.unsplash.com/photo-1527004013197-933c4bb611b3?w=800',
+    'victoria': 'https://images.unsplash.com/photo-1510076857177-7470076d4098?w=800',
+    'waterloo-city': 'https://images.unsplash.com/photo-1534690929166-4abb66aa2be9?w=800',
+    // Elizabeth line
+    'elizabeth': 'https://images.unsplash.com/photo-1564069114553-7215e1ff1890?w=800',
+    // Overground
+    'london-overground': 'https://images.unsplash.com/photo-1508144322886-3187947d2386?w=800',
+    // DLR
+    'dlr': 'https://images.unsplash.com/photo-1517456793572-1d8efd6dc135?w=800',
+    // Tram
+    'tram': 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=800',
+  };
+
+  // Return line-specific image or default by mode
+  if (imageMap[lineId]) return imageMap[lineId];
+  
+  // Default images by transport mode
+  const modeImages: { [key: string]: string } = {
+    'tube': 'https://images.unsplash.com/photo-1590649880765-91b1956b8276?w=800',
+    'bus': 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800',
+    'overground': 'https://images.unsplash.com/photo-1508144322886-3187947d2386?w=800',
+    'dlr': 'https://images.unsplash.com/photo-1517456793572-1d8efd6dc135?w=800',
+    'tram': 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800',
+    'river-bus': 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800',
+  };
+  
+  return modeImages[modeName] || 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800';
+};
+
+// Transform TfL line to destination format with real API data
+const transformTfLLineToDestination = (line: any, index: number, routeSeq?: any, disruptions?: any[]): any => {
+  // Null safety checks
+  if (!line) {
+    console.warn('Null line passed to transformTfLLineToDestination');
+    return null;
+  }
+
+  const lineId = line.id || '';
+  const lineName = line.name || 'Unknown Line';
+  const modeName = line.modeName || 'Transport';
+  
+  const transportTypeMap: any = {
+    'tube': 'Metro',
+    'bus': 'Bus',
+    'overground': 'Train',
+    'dlr': 'Light Rail',
+    'tram': 'Tram',
+    'river-bus': 'Boat',
+  };
+
+  const transportType = transportTypeMap[modeName] || 'Transport';
+  
+  const lineStatuses = Array.isArray(line.lineStatuses) ? line.lineStatuses : [];
+  const statusSeverity = lineStatuses[0]?.statusSeverity || 10;
+  const statusDescription = lineStatuses[0]?.statusSeverityDescription || 'Good Service';
+  const statusReason = lineStatuses[0]?.reason || '';
+  
+  let status = 'Active';
+  if (statusSeverity >= 10) status = 'Popular';
+  else if (statusSeverity >= 6) status = 'Active';
+  else status = 'Delayed';
+
+  // Get real stations from route sequence
+  let highlights: string[] = [];
+  if (routeSeq && routeSeq.stopPointSequences && Array.isArray(routeSeq.stopPointSequences) && routeSeq.stopPointSequences.length > 0) {
+    const stopPoints = routeSeq.stopPointSequences[0]?.stopPoint || [];
+    if (Array.isArray(stopPoints)) {
+      highlights = stopPoints.slice(0, 5).map((stop: any) => stop?.name || 'Station');
+    }
+  }
+  
+  if (highlights.length === 0) {
+    const routeSections = Array.isArray(line.routeSections) ? line.routeSections : [];
+    highlights = routeSections.length > 0
+      ? routeSections.slice(0, 5).map((section: any) => section?.name || 'Station')
+      : [lineName, 'Multiple stops', 'Real-time updates', 'Regular service', 'City transport'];
+  }
+
+  // Build tips from real API data
+  const tips = [
+    `${lineName} ${transportType} service across London`,
+    `Current status: ${statusDescription}`,
+  ];
+  
+  if (statusReason) {
+    tips.push(statusReason);
+  }
+  
+  const disruptionArray = Array.isArray(disruptions) ? disruptions : [];
+  if (disruptionArray.length > 0) {
+    tips.push(`${disruptionArray.length} active disruption(s)`);
+  } else {
+    tips.push('No current disruptions');
+  }
+  
+  tips.push('Use contactless payment or Oyster card');
+
+  // Build description with real data
+  let description = `${lineName} - ${transportType} service in London.`;
+  if (statusDescription !== 'Good Service') {
+    description += ` Current Status: ${statusDescription}.`;
+  }
+  if (statusReason) {
+    description += ` ${statusReason}`;
+  }
+  description += ' Part of Transport for London network serving millions daily.';
+
+  return {
+    id: index + 1,
+    routeId: lineId,
+    name: lineName,
+    description,
+    image: getLineImage(lineId, modeName),
+    country: 'United Kingdom',
+    city: 'London',
+    rating: Math.min(5, 4.0 + (statusSeverity / 10)),
+    status,
+    transportType,
+    duration: 'Varies by route',
+    price: 2.80,
+    schedule: routeSeq?.serviceCalendar ? [
+      `Mon-Fri: ${routeSeq.serviceCalendar.mondayToFriday?.isAvailable ? 'Available' : 'Limited'}`,
+      `Weekend: ${routeSeq.serviceCalendar.saturday?.isAvailable ? 'Available' : 'Limited'}`,
+    ] : ['Daily', '5:00 AM - 1:00 AM'],
+    tags: [transportType, 'Public Transit', 'TfL', 'London', modeName],
+    highlights,
+    tips,
+    reviewCount: Math.floor(Math.random() * 1000) + 500,
+    tflLineId: lineId,
+    lineStatus: statusDescription,
+    statusSeverity,
+    modeName,
+    disruptions: disruptionArray,
+    routeSequence: routeSeq,
+  };
+};
+
+// WMATA Bus API - Real-time bus data for Washington DC Metro area
+// Types based on WMATA API response structure
+export interface BusRoute {
+  RouteID: string;
+  Name: string;
+  LineDescription?: string;
+}
+
+export interface BusPosition {
+  DateTime: string;
+  Deviation: number;
+  DirectionNum: string;
+  DirectionText: string;
+  Lat: number;
+  Lon: number;
+  RouteID: string;
+  TripEndTime: string;
+  TripHeadsign: string;
+  TripID: string;
+  TripStartTime: string;
+  VehicleID: string;
+}
+
+export interface BusStop {
+  StopID: string;
+  Name: string;
+  Lat: number;
+  Lon: number;
+  Routes: string[];
+}
+
+export interface ShapePoint {
+  Lat: number;
+  Lon: number;
+  SeqNum: number;
+}
+
+export interface RouteDirection {
+  DirectionNum: string;
+  DirectionText: string;
+  TripHeadsign: string;
+  Shape: ShapePoint[];
+  Stops: BusStop[];
+}
+
+export interface RouteDetails {
+  RouteID: string;
+  Name: string;
+  Direction0?: RouteDirection;
+  Direction1?: RouteDirection;
+}
+
+// WMATA Bus API endpoints
+const wmataAPI = axios.create({
+  baseURL: WMATA_API_BASE_URL,
+  headers: {
+    'api_key': WMATA_API_KEY,
+  },
+});
+
+export const busAPI = {
+  // Get all bus routes
+  getRoutes: async (): Promise<BusRoute[]> => {
+    try {
+      const response = await wmataAPI.get('/jRoutes');
+      return response.data.Routes || [];
+    } catch (error) {
+      console.error('Error fetching routes:', error);
+      throw error;
+    }
+  },
+
+  // Get bus positions for a specific route or all routes
+  getBusPositions: async (routeId?: string): Promise<BusPosition[]> => {
+    try {
+      const params = routeId ? { RouteID: routeId } : {};
+      const response = await wmataAPI.get('/jBusPositions', { params });
+      return response.data.BusPositions || [];
+    } catch (error) {
+      console.error('Error fetching bus positions:', error);
+      throw error;
+    }
+  },
+
+  // Get route path details including stops and shape points
+  getRouteDetails: async (routeId: string, date?: string): Promise<RouteDetails> => {
+    try {
+      const params: any = { RouteID: routeId };
+      if (date) params.Date = date;
+      
+      const response = await wmataAPI.get('/jRouteDetails', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching route details:', error);
+      throw error;
+    }
+  },
+
+  // Search for bus stops
+  searchStops: async (lat?: number, lon?: number, radius?: number): Promise<BusStop[]> => {
+    try {
+      const params: any = {};
+      if (lat && lon && radius) {
+        params.Lat = lat;
+        params.Lon = lon;
+        params.Radius = radius;
+      }
+      
+      const response = await wmataAPI.get('/jStops', { params });
+      return response.data.Stops || [];
+    } catch (error) {
+      console.error('Error fetching stops:', error);
+      throw error;
+    }
+  },
+
+  // Get schedule for a specific route at a stop
+  getScheduleAtStop: async (stopId: string, date?: string): Promise<any> => {
+    try {
+      const params: any = { StopID: stopId };
+      if (date) params.Date = date;
+      
+      const response = await wmataAPI.get('/jStopSchedule', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching schedule:', error);
+      throw error;
+    }
+  },
+};
+
+// Get unique images for bus routes
+const getBusRouteImage = (routeId: string): string => {
+  // Hash route ID to select from image pool
+  const images = [
+    'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800',
+    'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800',
+    'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=800',
+    'https://images.unsplash.com/photo-1554672408-730f9e7e4f25?w=800',
+    'https://images.unsplash.com/photo-1581578017093-cd30197001dc?w=800',
+    'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800',
+    'https://images.unsplash.com/photo-1581578621830-d2eb68eef8cb?w=800',
+    'https://images.unsplash.com/photo-1581578949510-fa7315c4c350?w=800',
+  ];
+  
+  // Use route number to pick consistent image
+  const hash = routeId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return images[hash % images.length];
+};
+
+// Transform WMATA bus routes to our app's destination format
+const transformBusRouteToDestination = (
+  route: BusRoute,
+  index: number,
+  details?: RouteDetails,
+  positions?: BusPosition[]
+): any => {
+  const routeNumber = route.RouteID;
+  const activePositions = positions?.filter(p => p.RouteID === routeNumber) || [];
+  
+  // Extract stops from details
+  const allStops = [
+    ...(details?.Direction0?.Stops || []),
+    ...(details?.Direction1?.Stops || []),
+  ];
+  const uniqueStops = Array.from(new Set(allStops.map(s => s.Name))).slice(0, 5);
+  
+  // Create highlights from stops
+  const highlights = uniqueStops.length > 0 
+    ? uniqueStops 
+    : [`Route ${routeNumber}`, 'Multiple stops', 'Real-time tracking', 'Scheduled service', 'Accessible'];
+
+  // Calculate average deviation if positions exist
+  const avgDeviation = activePositions.length > 0
+    ? activePositions.reduce((sum, p) => sum + Math.abs(p.Deviation), 0) / activePositions.length
+    : 0;
+
+  // Generate tips with real data
+  const tips = [
+    `Route ${routeNumber}: ${route.Name}`,
+    `${activePositions.length} buses currently tracked in real-time`,
+  ];
+  
+  if (avgDeviation > 5) {
+    tips.push(`Average delay: ${Math.round(avgDeviation)} minutes`);
+  } else if (avgDeviation < -2) {
+    tips.push(`Buses running ahead of schedule`);
+  } else {
+    tips.push('Service running on time');
+  }
+  
+  if (uniqueStops.length > 0) {
+    tips.push(`${uniqueStops.length}+ stops along the route`);
+  }
+
+  const status = activePositions.length > 5 ? 'Popular' : activePositions.length > 0 ? 'Active' : 'Scheduled';
+  
+  // Get direction info
+  const direction = details?.Direction0 || details?.Direction1;
+  const headsign = direction?.TripHeadsign || route.Name;
+  
+  // Build detailed description from API data
+  let description = `Route ${routeNumber} - ${route.Name}. `;
+  if (activePositions.length > 0) {
+    description += `${activePositions.length} buses currently running with real-time GPS tracking. `;
+  }
+  if (headsign) {
+    description += `Direction: ${headsign}. `;
+  }
+  description += 'Part of WMATA (Washington Metropolitan Area Transit Authority) serving the DC Metro area.';
+  
+  return {
+    id: index + 1,
+    routeId: routeNumber,
+    name: `${routeNumber} - ${headsign}`,
+    description,
+    image: getBusRouteImage(routeNumber),
+    country: 'USA',
+    city: 'Washington DC',
+    rating: Math.min(5, 4.2 + (activePositions.length * 0.1)),
+    status,
+    transportType: 'Bus',
+    duration: 'Varies by route',
+    price: 2.00, // Standard DC Metro bus fare
+    schedule: activePositions.length > 0 
+      ? [`${activePositions.length} buses active`, 'Real-time tracking available']
+      : ['Check schedule', 'Service hours vary'],
+    tags: ['Bus', 'Public Transit', 'Real-time', 'WMATA'],
+    highlights,
+    tips,
+    reviewCount: Math.floor(Math.random() * 500) + 100,
+    // WMATA-specific data
+    busPositions: activePositions,
+    routeDetails: details,
+    activeBuses: activePositions.length,
+    avgDeviation: Math.round(avgDeviation),
+  };
+};
+
+export const destinationsAPI = {
+  // Get bus routes as destinations
+  getDestinations: async () => {
+    // Try WMATA only if API key is configured
+    if (WMATA_API_KEY) {
+      try {
+        console.log('Fetching WMATA bus routes...');
+        
+        const routes = await busAPI.getRoutes();
+        
+        if (routes && routes.length > 0) {
+          console.log(`Found ${routes.length} WMATA routes, getting positions for top 15...`);
+          
+          const popularRoutes = routes.slice(0, 15);
+          
+          const positionsPromises = popularRoutes.map(route => 
+            busAPI.getBusPositions(route.RouteID).catch(err => {
+              console.log(`No positions for route ${route.RouteID}`);
+              return [];
+            })
+          );
+          const allPositions = await Promise.all(positionsPromises);
+          
+          const destinations = popularRoutes.map((route, index) => 
+            transformBusRouteToDestination(
+              route,
+              index,
+              undefined,
+              allPositions[index]
+            )
+          );
+          
+          console.log(`Successfully loaded ${destinations.length} WMATA routes`);
+          return destinations.sort((a, b) => (b.activeBuses || 0) - (a.activeBuses || 0));
+        }
+      } catch (error: any) {
+        if (error.response?.status === 403) {
+          console.warn('WMATA API quota exceeded - switching to TfL');
+        } else {
+          console.warn('WMATA API failed:', error.message);
+        }
+      }
+    } else {
+      console.log('WMATA API key not configured, using TfL as primary source');
+    }
+
+    // Use TfL API (London Transport - free, no key required)
+    try {
+      console.log('Fetching Transport for London (TfL) routes...');
+      
+      const lines = await tflAPI.getLines('tube,bus,overground');
+      
+      if (lines && lines.length > 0) {
+        console.log(`Found ${lines.length} TfL lines, fetching detailed data...`);
+        
+        const popularLines = lines.slice(0, 15);
+        
+        // Fetch route sequences and disruptions in parallel for better details
+        const detailsPromises = popularLines.map(async (line: any) => {
+          const [routeSeq, disruptions] = await Promise.all([
+            tflAPI.getRouteSequence(line.id).catch(() => null),
+            tflAPI.getDisruptions(line.id).catch(() => []),
+          ]);
+          return { line, routeSeq, disruptions };
+        });
+        
+        const linesWithDetails = await Promise.all(detailsPromises);
+        
+        const destinations = linesWithDetails
+          .map((data, index) => transformTfLLineToDestination(data.line, index, data.routeSeq, data.disruptions))
+          .filter(dest => dest !== null); // Remove any null results
+        
+        console.log(`✅ Successfully loaded ${destinations.length} London transport routes`);
+        return destinations;
+      }
+    } catch (error: any) {
+      console.error('❌ TfL API failed:', error.message);
+    }
+
+    throw new Error('Unable to fetch transport data from any API');
+  },
+  
+  getDestinationById: async (id: number) => {
+    // Try WMATA only if API key is configured
+    if (WMATA_API_KEY) {
+      try {
+        console.log(`Fetching WMATA details for destination ID: ${id}`);
+        
+        const routes = await busAPI.getRoutes();
+        const route = routes[id - 1];
+        
+        if (route) {
+          const [details, positions] = await Promise.all([
+            busAPI.getRouteDetails(route.RouteID).catch(() => undefined),
+            busAPI.getBusPositions(route.RouteID).catch(() => []),
+          ]);
+          
+          return transformBusRouteToDestination(route, id - 1, details, positions);
+        }
+      } catch (error: any) {
+        if (error.response?.status === 403) {
+          console.warn(`WMATA quota exceeded for ID ${id}`);
+        } else {
+          console.warn(`WMATA failed for ID ${id}:`, error.message);
+        }
+      }
+    }
+
+    // Use TfL API
+    try {
+      console.log(`Fetching TfL details for destination ID: ${id}`);
+      
+      const lines = await tflAPI.getLines('tube,bus,overground');
+      const line = lines[id - 1];
+      
+      if (line) {
+        // Fetch detailed information
+        const [statusData, routeSeq, disruptions] = await Promise.all([
+          tflAPI.getLineStatus(line.id).catch(() => []),
+          tflAPI.getRouteSequence(line.id).catch(() => null),
+          tflAPI.getDisruptions(line.id).catch(() => []),
+        ]);
+        
+        // Safely assign line statuses
+        if (statusData && statusData.length > 0 && statusData[0]) {
+          line.lineStatuses = statusData[0].lineStatuses || statusData;
+        }
+        
+        return transformTfLLineToDestination(line, id - 1, routeSeq, disruptions);
+      }
+    } catch (error: any) {
+      console.error(`❌ TfL failed for ID ${id}:`, error.message);
+    }
+
+    throw new Error('Destination not found in any API');
+  },
+};
