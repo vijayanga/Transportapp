@@ -1,10 +1,12 @@
 import { Feather } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { colors } from "../../constants/theme";
+import { StyleSheet, Text, View } from "react-native";
+import { colors, fontSize, fontWeight, spacing } from "../../constants/theme";
 import { useAppSelector } from "../../store/hooks";
 
 export default function TabLayout() {
   const isDark = useAppSelector((state) => state.theme.isDark);
+  const user = useAppSelector((state) => state.auth.user);
   const theme = isDark ? colors.dark : colors.light;
 
   return (
@@ -20,6 +22,14 @@ export default function TabLayout() {
           backgroundColor: theme.background,
         },
         headerTintColor: theme.text,
+        headerRight: () => (
+          <View style={styles.headerRight}>
+            <Feather name="user" size={16} color={theme.primary} />
+            <Text style={[styles.headerUsername, { color: theme.text }]}>
+              {user?.firstName || user?.username || "Guest"}
+            </Text>
+          </View>
+        ),
       }}
     >
       <Tabs.Screen
@@ -52,3 +62,16 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: spacing.md,
+    gap: spacing.xs,
+  },
+  headerUsername: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+  },
+});

@@ -27,9 +27,16 @@ interface Destination {
   name: string;
   description: string;
   image: string;
+  city: string;
   country: string;
   rating?: number;
   status?: string;
+  type?: string;
+  route?: string;
+  schedule?: string;
+  operatingHours?: string;
+  fare?: string;
+  stops?: number;
 }
 
 export default function HomeScreen() {
@@ -117,11 +124,42 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
+
+        {/* Transport Type & Route */}
+        {item.type && (
+          <View style={styles.transportInfo}>
+            <View style={styles.metaItem}>
+              <Feather name="navigation" size={14} color={theme.primary} />
+              <Text
+                style={[
+                  styles.metaText,
+                  { color: theme.text, fontWeight: fontWeight.medium },
+                ]}
+              >
+                {item.type}
+              </Text>
+            </View>
+            {item.route && (
+              <View style={styles.metaItem}>
+                <Feather
+                  name="git-branch"
+                  size={14}
+                  color={theme.textSecondary}
+                />
+                <Text style={[styles.metaText, { color: theme.textSecondary }]}>
+                  {item.route}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Location & Rating */}
         <View style={styles.cardMeta}>
           <View style={styles.metaItem}>
             <Feather name="map-pin" size={14} color={theme.textSecondary} />
             <Text style={[styles.metaText, { color: theme.textSecondary }]}>
-              {item.country}
+              {item.city}, {item.country}
             </Text>
           </View>
           {item.rating && (
@@ -133,6 +171,37 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
+
+        {/* Schedule & Fare */}
+        {(item.schedule || item.fare) && (
+          <View style={styles.scheduleInfo}>
+            {item.schedule && (
+              <View style={styles.infoChip}>
+                <Feather name="clock" size={12} color={theme.primary} />
+                <Text style={[styles.infoChipText, { color: theme.text }]}>
+                  {item.schedule}
+                </Text>
+              </View>
+            )}
+            {item.fare && (
+              <View style={styles.infoChip}>
+                <Feather name="dollar-sign" size={12} color={theme.success} />
+                <Text style={[styles.infoChipText, { color: theme.text }]}>
+                  {item.fare}
+                </Text>
+              </View>
+            )}
+            {item.stops && (
+              <View style={styles.infoChip}>
+                <Feather name="disc" size={12} color={theme.textSecondary} />
+                <Text style={[styles.infoChipText, { color: theme.text }]}>
+                  {item.stops} stops
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
         <Text
           style={[styles.cardDescription, { color: theme.textSecondary }]}
           numberOfLines={2}
@@ -281,5 +350,30 @@ const styles = StyleSheet.create({
   cardDescription: {
     fontSize: fontSize.sm,
     lineHeight: 20,
+  },
+  transportInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.xs,
+    gap: spacing.sm,
+  },
+  scheduleInfo: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
+  },
+  infoChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.05)",
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+    gap: 4,
+  },
+  infoChipText: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.medium,
   },
 });
