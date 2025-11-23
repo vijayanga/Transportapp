@@ -136,6 +136,12 @@ const getLineImage = (lineId: string, modeName: string): string => {
 
 // Transform TfL line to destination format with real API data
 const transformTfLLineToDestination = (line: any, index: number, routeSeq?: any, disruptions?: any[]): any => {
+  // Null safety checks
+  if (!line) {
+    console.warn('Null line passed to transformTfLLineToDestination');
+    return null;
+  }
+
   const lineId = line.id || '';
   const lineName = line.name || 'Unknown Line';
   const modeName = line.modeName || 'Transport';
@@ -151,7 +157,7 @@ const transformTfLLineToDestination = (line: any, index: number, routeSeq?: any,
 
   const transportType = transportTypeMap[modeName] || 'Transport';
   
-  const lineStatuses = line.lineStatuses || [];
+  const lineStatuses = Array.isArray(line.lineStatuses) ? line.lineStatuses : [];
   const statusSeverity = lineStatuses[0]?.statusSeverity || 10;
   const statusDescription = lineStatuses[0]?.statusSeverityDescription || 'Good Service';
   const statusReason = lineStatuses[0]?.reason || '';
@@ -163,13 +169,17 @@ const transformTfLLineToDestination = (line: any, index: number, routeSeq?: any,
 
   // Get real stations from route sequence
   let highlights: string[] = [];
-  if (routeSeq && routeSeq.stopPointSequences && routeSeq.stopPointSequences.length > 0) {
-    const stopPoints = routeSeq.stopPointSequences[0].stopPoint || [];
-    highlights = stopPoints.slice(0, 5).map((stop: any) => stop.name);
-  } else {
-    const routeSections = line.routeSections || [];
+  if (routeSeq && routeSeq.stopPointSequences && Array.isArray(routeSeq.stopPointSequences) && routeSeq.stopPointSequences.length > 0) {
+    const stopPoints = routeSeq.stopPointSequences[0]?.stopPoint || [];
+    if (Array.isArray(stopPoints)) {
+      highlights = stopPoints.slice(0, 5).map((stop: any) => stop?.name || 'Station');
+    }
+  }
+  
+  if (highlights.length === 0) {
+    const routeSections = Array.isArray(line.routeSections) ? line.routeSections : [];
     highlights = routeSections.length > 0
-      ? routeSections.slice(0, 5).map((section: any) => section.name || 'Station')
+      ? routeSections.slice(0, 5).map((section: any) => section?.name || 'Station')
       : [lineName, 'Multiple stops', 'Real-time updates', 'Regular service', 'City transport'];
   }
 
@@ -183,8 +193,9 @@ const transformTfLLineToDestination = (line: any, index: number, routeSeq?: any,
     tips.push(statusReason);
   }
   
-  if (disruptions && disruptions.length > 0) {
-    tips.push(`${disruptions.length} active disruption(s)`);
+  const disruptionArray = Array.isArray(disruptions) ? disruptions : [];
+  if (disruptionArray.length > 0) {
+    tips.push(`${disruptionArray.length} active disruption(s)`);
   } else {
     tips.push('No current disruptions');
   }
@@ -226,7 +237,7 @@ const transformTfLLineToDestination = (line: any, index: number, routeSeq?: any,
     lineStatus: statusDescription,
     statusSeverity,
     modeName,
-    disruptions: disruptions || [],
+    disruptions: disruptionArray,
     routeSequence: routeSeq,
   };
 };
@@ -538,9 +549,9 @@ export const destinationsAPI = {
         
         const linesWithDetails = await Promise.all(detailsPromises);
         
-        const destinations = linesWithDetails.map((data, index) => 
-          transformTfLLineToDestination(data.line, index, data.routeSeq, data.disruptions)
-        );
+        const destinations = linesWithDetails
+          .map((data, index) => transformTfLLineToDestination(data.line, index, data.routeSeq, data.disruptions))
+          .filter(dest => dest !== null); // Remove any null results
         
         console.log(`✅ Successfully loaded ${destinations.length} London transport routes`);
         return destinations;
@@ -593,8 +604,9 @@ export const destinationsAPI = {
           tflAPI.getDisruptions(line.id).catch(() => []),
         ]);
         
-        if (statusData.length > 0) {
-          line.lineStatuses = statusData[0].lineStatuses;
+        // Safely assign line statuses
+        if (statusData && statusData.length > 0 && statusData[0]) {
+          line.lineStatuses = statusData[0].lineStatuses || statusData;
         }
         
         return transformTfLLineToDestination(line, id - 1, routeSeq, disruptions);
