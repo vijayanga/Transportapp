@@ -3,6 +3,7 @@
 ## 📋 Prerequisites Checklist
 
 Before running the app, ensure you have:
+
 - ✅ Node.js installed (v16+)
 - ✅ npm or yarn package manager
 - ✅ Expo Go app on your phone (iOS/Android)
@@ -11,16 +12,19 @@ Before running the app, ensure you have:
 ## 🚀 Quick Start
 
 ### Step 1: Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### Step 2: Start Development Server
+
 ```bash
 npm start
 ```
 
 ### Step 3: Run the App
+
 - **On Physical Device**: Scan QR code with Expo Go
 - **On Android Emulator**: Press `a`
 - **On iOS Simulator**: Press `i`
@@ -28,6 +32,7 @@ npm start
 ## 🔑 Test Credentials
 
 **Login with:**
+
 - Username: `emilys`
 - Password: `emilyspass`
 
@@ -45,29 +50,34 @@ npm start
 ## 🎯 Features to Test
 
 ### Authentication
+
 - [ ] Register with valid details
 - [ ] Try invalid inputs (see validation errors)
 - [ ] Login with demo credentials
 - [ ] Logout and login again
 
 ### Destinations
+
 - [ ] Pull down to refresh list
 - [ ] Tap card to see details
 - [ ] Scroll through destination info
 - [ ] View tags, tips, and metadata
 
 ### Favorites
+
 - [ ] Tap heart to add favorite
 - [ ] View favorites in Favorites tab
 - [ ] Remove from favorites
 - [ ] Favorites persist after app restart
 
 ### Dark Mode
+
 - [ ] Toggle dark mode in Profile
 - [ ] Check all screens update
 - [ ] Close and reopen app (should remember preference)
 
 ### Navigation
+
 - [ ] Use bottom tabs
 - [ ] Navigate to details and back
 - [ ] Test deep navigation flow
@@ -75,6 +85,7 @@ npm start
 ## 🐛 Troubleshooting
 
 ### Issue: Dependencies not installing
+
 ```bash
 # Clear cache and reinstall
 rm -rf node_modules
@@ -83,17 +94,20 @@ npm install
 ```
 
 ### Issue: Expo server won't start
+
 ```bash
 # Reset Expo cache
 npx expo start -c
 ```
 
 ### Issue: App won't load on device
+
 1. Ensure phone and computer on same WiFi
 2. Try scanning QR code again
 3. Restart Expo Go app
 
 ### Issue: TypeScript errors
+
 ```bash
 # These are expected for Expo Router paths
 # The app will still run correctly
@@ -167,6 +181,7 @@ npm run lint
 ## 🎓 Learning Outcomes
 
 This project demonstrates:
+
 - ✅ React Native development with Expo
 - ✅ State management with Redux Toolkit
 - ✅ Form handling and validation
@@ -180,6 +195,7 @@ This project demonstrates:
 ## 📞 Need Help?
 
 Common commands:
+
 - `npm start` - Start dev server
 - `npm run android` - Run on Android
 - `npm run ios` - Run on iOS

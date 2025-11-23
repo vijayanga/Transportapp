@@ -1,17 +1,23 @@
-import React from 'react';
+import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React from "react";
 import {
-  View,
-  Text,
   FlatList,
-  StyleSheet,
-  TouchableOpacity,
   Image,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
-import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { toggleFavorite } from '../../store/favoritesSlice';
-import { colors, spacing, borderRadius, fontSize, fontWeight } from '../../constants/theme';
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  borderRadius,
+  colors,
+  fontSize,
+  fontWeight,
+  spacing,
+} from "../../constants/theme";
+import { toggleFavorite } from "../../store/favoritesSlice";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
 export default function FavoritesScreen() {
   const router = useRouter();
@@ -35,10 +41,18 @@ export default function FavoritesScreen() {
         style={[styles.removeButton, { backgroundColor: theme.background }]}
         onPress={() => handleRemoveFavorite(item)}
       >
-        <Feather name="heart" size={20} color={colors.light.error} fill={colors.light.error} />
+        <Feather
+          name="heart"
+          size={20}
+          color={colors.light.error}
+          fill={colors.light.error}
+        />
       </TouchableOpacity>
       <View style={styles.cardContent}>
-        <Text style={[styles.cardTitle, { color: theme.text }]} numberOfLines={1}>
+        <Text
+          style={[styles.cardTitle, { color: theme.text }]}
+          numberOfLines={1}
+        >
           {item.name}
         </Text>
         <View style={styles.cardMeta}>
@@ -64,13 +78,15 @@ export default function FavoritesScreen() {
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
       <Feather name="heart" size={64} color={theme.textSecondary} />
-      <Text style={[styles.emptyTitle, { color: theme.text }]}>No Favorites Yet</Text>
+      <Text style={[styles.emptyTitle, { color: theme.text }]}>
+        No Favorites Yet
+      </Text>
       <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
         Start exploring and add your favorite destinations
       </Text>
       <TouchableOpacity
         style={[styles.exploreButton, { backgroundColor: theme.primary }]}
-        onPress={() => router.push('/(tabs)/' as any)}
+        onPress={() => router.push("/(tabs)/" as any)}
       >
         <Text style={styles.exploreButtonText}>Explore Destinations</Text>
       </TouchableOpacity>
@@ -83,7 +99,9 @@ export default function FavoritesScreen() {
         data={favorites}
         renderItem={renderFavoriteCard}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={favorites.length === 0 ? styles.emptyListContent : styles.listContent}
+        contentContainerStyle={
+          favorites.length === 0 ? styles.emptyListContent : styles.listContent
+        }
         ListEmptyComponent={renderEmptyState}
         showsVerticalScrollIndicator={false}
         numColumns={2}
@@ -102,39 +120,39 @@ const styles = StyleSheet.create({
   },
   emptyListContent: {
     flexGrow: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: spacing.lg,
   },
   row: {
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   card: {
     borderRadius: borderRadius.lg,
     marginBottom: spacing.md,
-    overflow: 'hidden',
-    width: '48%',
+    overflow: "hidden",
+    width: "48%",
     elevation: 3,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
   },
   cardImage: {
-    width: '100%',
+    width: "100%",
     height: 150,
-    backgroundColor: '#E1E1E1',
+    backgroundColor: "#E1E1E1",
   },
   removeButton: {
-    position: 'absolute',
+    position: "absolute",
     top: spacing.sm,
     right: spacing.sm,
     width: 36,
     height: 36,
     borderRadius: borderRadius.full,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -148,12 +166,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   cardMeta: {
-    flexDirection: 'column',
+    flexDirection: "column",
     gap: spacing.xs,
   },
   metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   metaText: {
     fontSize: fontSize.xs,
@@ -161,8 +179,8 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyTitle: {
     fontSize: fontSize.xl,
@@ -171,7 +189,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: fontSize.md,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: spacing.sm,
     marginBottom: spacing.xl,
   },
@@ -181,7 +199,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
   },
   exploreButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: fontSize.md,
     fontWeight: fontWeight.semibold,
   },

@@ -27,6 +27,7 @@ git commit -m "Set up Redux store with auth, favorites, and theme slices"
 ```
 
 ### Individual Slice Commits (Alternative)
+
 ```bash
 git add store/authSlice.ts
 git commit -m "Implement authentication slice with login/logout actions"
@@ -206,12 +207,14 @@ git commit -m "Feature: Complete UI styling system with responsive design"
 ## 📋 Recommended Commit Strategy
 
 ### Option 1: Granular Commits (Recommended)
+
 - Commit after each file/feature completion
 - Clear, specific commit messages
 - Easy to track changes
 - Better for debugging
 
 ### Option 2: Feature Commits
+
 - Commit complete features together
 - Fewer commits overall
 - Good for feature tracking
@@ -220,6 +223,7 @@ git commit -m "Feature: Complete UI styling system with responsive design"
 ## 🔧 Git Commands Reference
 
 ### Initial Setup
+
 ```bash
 # Initialize repository
 git init
@@ -269,6 +273,7 @@ git log --graph --oneline --all
 ## ✅ Pre-Push Checklist
 
 Before pushing to GitHub:
+
 - [ ] All files committed
 - [ ] Meaningful commit messages
 - [ ] No sensitive data (API keys, passwords)
@@ -279,6 +284,7 @@ Before pushing to GitHub:
 ## 📝 Commit Message Best Practices
 
 ### Format
+
 ```
 <type>: <subject>
 
@@ -286,6 +292,7 @@ Before pushing to GitHub:
 ```
 
 ### Types
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation only
@@ -295,6 +302,7 @@ Before pushing to GitHub:
 - `chore`: Maintenance tasks
 
 ### Examples
+
 ```bash
 feat: Add user authentication with JWT tokens
 fix: Resolve AsyncStorage persistence issue on iOS
@@ -349,12 +357,14 @@ git push  # Final push
 ## 📌 Important Notes
 
 1. **Never commit**:
+
    - `node_modules/`
    - `.env` files
    - Personal API keys
    - `.expo/` cache
 
 2. **Always commit**:
+
    - Source code
    - Configuration files
    - README and documentation

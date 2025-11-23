@@ -7,6 +7,7 @@ GoMate is a cross-platform mobile application built with React Native and Expo f
 ## ✨ Features
 
 ### Core Features
+
 - ✅ **User Authentication** - Complete registration and login flow with form validation
 - ✅ **Dynamic Item List** - Browse destinations fetched from API with card-based UI
 - ✅ **Details Screen** - View comprehensive information about each destination
@@ -16,6 +17,7 @@ GoMate is a cross-platform mobile application built with React Native and Expo f
 - ✅ **Feather Icons** - Consistent iconography throughout
 
 ### Bonus Features
+
 - ✅ **Dark Mode** - Toggle between light and dark themes with persistence
 
 ## 🛠️ Technology Stack
@@ -63,6 +65,7 @@ gomate/
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v16 or higher)
 - npm or yarn
 - Expo Go app on your mobile device (for testing)
@@ -70,27 +73,32 @@ gomate/
 ### Installation
 
 1. **Clone the repository**
+
 ```bash
 cd gomate
 ```
 
 2. **Install dependencies**
+
 ```bash
 npm install
 ```
 
 3. **Start the development server**
+
 ```bash
 npm start
 ```
 
 4. **Run on your device**
+
 - Scan the QR code with Expo Go (Android) or Camera app (iOS)
 - Or press `a` for Android emulator, `i` for iOS simulator
 
 ## 🔑 Demo Credentials
 
 For testing the login functionality, use these credentials:
+
 - **Username**: `emilys`
 - **Password**: `emilyspass`
 
@@ -99,30 +107,35 @@ You can also create a new account through the registration screen.
 ## 🎯 Key Features Implementation
 
 ### 1. User Authentication
+
 - Form validation using Yup schema
 - Secure token storage with AsyncStorage
 - Persistent login state across app restarts
 - Protected routes with automatic redirection
 
 ### 2. Navigation Structure
+
 - Expo Router for file-based routing
 - Bottom tab navigation for main screens
 - Stack navigation for details
 - Proper back navigation and deep linking support
 
 ### 3. API Integration
+
 - Axios for HTTP requests
 - DummyJSON API for authentication
 - Recipe API transformed for destination data
 - Error handling and loading states
 
 ### 4. State Management
+
 - Redux Toolkit for global state
 - Separate slices for auth, favorites, and theme
 - Async thunks for API calls
 - TypeScript for type safety
 
 ### 5. Data Persistence
+
 - AsyncStorage for:
   - User authentication tokens
   - Favorite destinations
@@ -130,6 +143,7 @@ You can also create a new account through the registration screen.
 - Auto-load on app startup
 
 ### 6. UI/UX Design
+
 - Consistent design system with theme constants
 - Card-based layouts
 - Smooth animations and transitions
@@ -138,6 +152,7 @@ You can also create a new account through the registration screen.
 - Responsive images
 
 ### 7. Dark Mode
+
 - Toggle in profile screen
 - Persistent across app restarts
 - Consistent theming throughout all screens
@@ -160,6 +175,7 @@ You can also create a new account through the registration screen.
 ## 📸 Screenshots
 
 Screenshots are included in the submission showing:
+
 1. Login Screen (Light & Dark)
 2. Registration Screen
 3. Home Screen with destination list
@@ -170,6 +186,7 @@ Screenshots are included in the submission showing:
 ## 🎥 Demo Video
 
 A demo video (≤2 minutes) is included showing:
+
 - User registration/login
 - Browsing destinations
 - Viewing details
@@ -197,6 +214,7 @@ A demo video (≤2 minutes) is included showing:
 ## 🧪 Testing
 
 To test the application:
+
 1. Test user registration with various inputs
 2. Test form validation (try invalid inputs)
 3. Test login with demo credentials
@@ -209,6 +227,7 @@ To test the application:
 ## 📦 Dependencies
 
 Main dependencies:
+
 - expo: ~54.0.25
 - react: 19.1.0
 - react-native: 0.81.5
@@ -234,6 +253,7 @@ Main dependencies:
 ## 👨‍💻 Development
 
 This project was developed following:
+
 - React Native best practices
 - Redux Toolkit patterns
 - Expo Router conventions

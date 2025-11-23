@@ -1,24 +1,30 @@
-import React, { useState } from 'react';
+import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Formik } from "formik";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
+  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
-import { Formik } from 'formik';
-import { loginSchema } from '../utils/validation';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { loginUser } from '../store/authSlice';
-import { authAPI } from '../services/api';
-import { colors, spacing, borderRadius, fontSize, fontWeight } from '../constants/theme';
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  borderRadius,
+  colors,
+  fontSize,
+  fontWeight,
+  spacing,
+} from "../constants/theme";
+import { authAPI } from "../services/api";
+import { loginUser } from "../store/authSlice";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { loginSchema } from "../utils/validation";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -28,16 +34,20 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (values: { username: string; password: string }) => {
+  const handleLogin = async (values: {
+    username: string;
+    password: string;
+  }) => {
     setIsLoading(true);
     try {
       const userData = await authAPI.login(values.username, values.password);
       await dispatch(loginUser(userData));
-      router.replace('/(tabs)/' as any);
+      router.replace("/(tabs)/" as any);
     } catch (error: any) {
       Alert.alert(
-        'Login Failed',
-        error.response?.data?.message || 'Invalid username or password. Try: emilys / emilyspass'
+        "Login Failed",
+        error.response?.data?.message ||
+          "Invalid username or password. Try: emilys / emilyspass"
       );
     } finally {
       setIsLoading(false);
@@ -46,7 +56,7 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <ScrollView
@@ -55,30 +65,51 @@ export default function LoginScreen() {
       >
         <View style={styles.header}>
           <Feather name="map-pin" size={64} color={theme.primary} />
-          <Text style={[styles.title, { color: theme.text }]}>Welcome to GoMate</Text>
+          <Text style={[styles.title, { color: theme.text }]}>
+            Welcome to GoMate
+          </Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             Your travel companion
           </Text>
         </View>
 
         <Formik
-          initialValues={{ username: '', password: '' }}
+          initialValues={{ username: "", password: "" }}
           validationSchema={loginSchema}
           onSubmit={handleLogin}
         >
-          {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+          {({
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            values,
+            errors,
+            touched,
+          }) => (
             <View style={styles.form}>
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: theme.text }]}>Username</Text>
-                <View style={[styles.inputWrapper, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                  <Feather name="user" size={20} color={theme.textSecondary} style={styles.inputIcon} />
+                <Text style={[styles.label, { color: theme.text }]}>
+                  Username
+                </Text>
+                <View
+                  style={[
+                    styles.inputWrapper,
+                    { backgroundColor: theme.card, borderColor: theme.border },
+                  ]}
+                >
+                  <Feather
+                    name="user"
+                    size={20}
+                    color={theme.textSecondary}
+                    style={styles.inputIcon}
+                  />
                   <TextInput
                     style={[styles.input, { color: theme.text }]}
                     placeholder="Enter your username"
                     placeholderTextColor={theme.textSecondary}
                     value={values.username}
-                    onChangeText={handleChange('username')}
-                    onBlur={handleBlur('username')}
+                    onChangeText={handleChange("username")}
+                    onBlur={handleBlur("username")}
                     autoCapitalize="none"
                   />
                 </View>
@@ -88,22 +119,36 @@ export default function LoginScreen() {
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: theme.text }]}>Password</Text>
-                <View style={[styles.inputWrapper, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                  <Feather name="lock" size={20} color={theme.textSecondary} style={styles.inputIcon} />
+                <Text style={[styles.label, { color: theme.text }]}>
+                  Password
+                </Text>
+                <View
+                  style={[
+                    styles.inputWrapper,
+                    { backgroundColor: theme.card, borderColor: theme.border },
+                  ]}
+                >
+                  <Feather
+                    name="lock"
+                    size={20}
+                    color={theme.textSecondary}
+                    style={styles.inputIcon}
+                  />
                   <TextInput
                     style={[styles.input, { color: theme.text }]}
                     placeholder="Enter your password"
                     placeholderTextColor={theme.textSecondary}
                     value={values.password}
-                    onChangeText={handleChange('password')}
-                    onBlur={handleBlur('password')}
+                    onChangeText={handleChange("password")}
+                    onBlur={handleBlur("password")}
                     secureTextEntry={!showPassword}
                     autoCapitalize="none"
                   />
-                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
                     <Feather
-                      name={showPassword ? 'eye-off' : 'eye'}
+                      name={showPassword ? "eye-off" : "eye"}
                       size={20}
                       color={theme.textSecondary}
                       style={styles.inputIcon}
@@ -128,11 +173,15 @@ export default function LoginScreen() {
               </TouchableOpacity>
 
               <View style={styles.footer}>
-                <Text style={[styles.footerText, { color: theme.textSecondary }]}>
-                  Don't have an account?{' '}
+                <Text
+                  style={[styles.footerText, { color: theme.textSecondary }]}
+                >
+                  Don't have an account?{" "}
                 </Text>
-                <TouchableOpacity onPress={() => router.push('/register')}>
-                  <Text style={[styles.linkText, { color: theme.primary }]}>Sign Up</Text>
+                <TouchableOpacity onPress={() => router.push("/register")}>
+                  <Text style={[styles.linkText, { color: theme.primary }]}>
+                    Sign Up
+                  </Text>
                 </TouchableOpacity>
               </View>
 
@@ -155,11 +204,11 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: spacing.lg,
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: spacing.xl,
   },
   title: {
@@ -172,7 +221,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   form: {
-    width: '100%',
+    width: "100%",
   },
   inputContainer: {
     marginBottom: spacing.md,
@@ -183,8 +232,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: borderRadius.md,
     borderWidth: 1,
     paddingHorizontal: spacing.md,
@@ -205,18 +254,18 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: borderRadius.md,
     paddingVertical: spacing.md,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: spacing.md,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: fontSize.md,
     fontWeight: fontWeight.semibold,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: spacing.lg,
   },
   footerText: {
@@ -229,10 +278,10 @@ const styles = StyleSheet.create({
   demoContainer: {
     marginTop: spacing.md,
     padding: spacing.sm,
-    alignItems: 'center',
+    alignItems: "center",
   },
   demoText: {
     fontSize: fontSize.xs,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
 });

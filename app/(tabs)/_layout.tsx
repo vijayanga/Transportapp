@@ -1,7 +1,7 @@
-import { Tabs } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
-import { useAppSelector } from '../../store/hooks';
-import { colors } from '../../constants/theme';
+import { Feather } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+import { colors } from "../../constants/theme";
+import { useAppSelector } from "../../store/hooks";
 
 export default function TabLayout() {
   const isDark = useAppSelector((state) => state.theme.isDark);
@@ -25,7 +25,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: "Home",
           tabBarIcon: ({ color, size }) => (
             <Feather name="home" size={size} color={color} />
           ),
@@ -34,7 +34,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="favorites"
         options={{
-          title: 'Favorites',
+          title: "Favorites",
           tabBarIcon: ({ color, size }) => (
             <Feather name="heart" size={size} color={color} />
           ),
@@ -43,7 +43,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: "Profile",
           tabBarIcon: ({ color, size }) => (
             <Feather name="user" size={size} color={color} />
           ),

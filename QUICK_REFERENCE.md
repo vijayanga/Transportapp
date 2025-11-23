@@ -13,6 +13,7 @@ npm run web        # Web browser
 ```
 
 ## 🔑 Demo Login
+
 ```
 Username: emilys
 Password: emilyspass
@@ -20,22 +21,22 @@ Password: emilyspass
 
 ## 📂 Key Files
 
-| File | Purpose |
-|------|---------|
-| `app/_layout.tsx` | Root with Redux Provider |
-| `app/index.tsx` | Auth routing |
-| `app/login.tsx` | Login screen |
-| `app/register.tsx` | Register screen |
-| `app/(tabs)/index.tsx` | Home screen |
-| `app/(tabs)/favorites.tsx` | Favorites screen |
-| `app/(tabs)/profile.tsx` | Profile screen |
-| `app/details/[id].tsx` | Details screen |
-| `store/authSlice.ts` | Auth state |
-| `store/favoritesSlice.ts` | Favorites state |
-| `store/themeSlice.ts` | Theme state |
-| `services/api.ts` | API calls |
-| `utils/validation.ts` | Form validation |
-| `constants/theme.ts` | Design system |
+| File                       | Purpose                  |
+| -------------------------- | ------------------------ |
+| `app/_layout.tsx`          | Root with Redux Provider |
+| `app/index.tsx`            | Auth routing             |
+| `app/login.tsx`            | Login screen             |
+| `app/register.tsx`         | Register screen          |
+| `app/(tabs)/index.tsx`     | Home screen              |
+| `app/(tabs)/favorites.tsx` | Favorites screen         |
+| `app/(tabs)/profile.tsx`   | Profile screen           |
+| `app/details/[id].tsx`     | Details screen           |
+| `store/authSlice.ts`       | Auth state               |
+| `store/favoritesSlice.ts`  | Favorites state          |
+| `store/themeSlice.ts`      | Theme state              |
+| `services/api.ts`          | API calls                |
+| `utils/validation.ts`      | Form validation          |
+| `constants/theme.ts`       | Design system            |
 
 ## 🎯 Feature Checklist
 
@@ -62,10 +63,12 @@ Password: emilyspass
 ## 🗂️ Redux Slices
 
 1. **Auth** - `store/authSlice.ts`
+
    - Login, logout, user data
    - AsyncStorage persistence
 
 2. **Favorites** - `store/favoritesSlice.ts`
+
    - Add, remove favorites
    - AsyncStorage persistence
 
@@ -96,12 +99,14 @@ Index (Auth Check)
 ## 🎨 Theme Colors
 
 ### Light Mode
+
 - Primary: `#007AFF`
 - Background: `#FFFFFF`
 - Card: `#F2F2F7`
 - Text: `#000000`
 
 ### Dark Mode
+
 - Primary: `#0A84FF`
 - Background: `#000000`
 - Card: `#1C1C1E`
@@ -123,12 +128,12 @@ Index (Auth Check)
 
 ## 🐛 Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| Won't start | `npm start -- --clear` |
+| Issue              | Solution                             |
+| ------------------ | ------------------------------------ |
+| Won't start        | `npm start -- --clear`               |
 | Dependencies error | `rm -rf node_modules && npm install` |
-| Cache issues | `npx expo start -c` |
-| Type errors | Check imports, restart TypeScript |
+| Cache issues       | `npx expo start -c`                  |
+| Type errors        | Check imports, restart TypeScript    |
 
 ## 📸 Required Screenshots
 
@@ -159,17 +164,17 @@ Index (Auth Check)
 
 ## 📊 Assignment Marks
 
-| Category | Marks | Status |
-|----------|-------|--------|
-| Authentication | 15 | ✅ |
-| Navigation | 10 | ✅ |
-| API Integration | 15 | ✅ |
-| State Management | 15 | ✅ |
-| UI/UX Design | 15 | ✅ |
-| Code Quality | 20 | ✅ |
-| Demo Video | 5 | ⏳ |
-| **Bonus: Dark Mode** | 5 | ✅ |
-| **TOTAL** | **100** | **95** |
+| Category             | Marks   | Status |
+| -------------------- | ------- | ------ |
+| Authentication       | 15      | ✅     |
+| Navigation           | 10      | ✅     |
+| API Integration      | 15      | ✅     |
+| State Management     | 15      | ✅     |
+| UI/UX Design         | 15      | ✅     |
+| Code Quality         | 20      | ✅     |
+| Demo Video           | 5       | ⏳     |
+| **Bonus: Dark Mode** | 5       | ✅     |
+| **TOTAL**            | **100** | **95** |
 
 ## 🎯 Quick Test
 
@@ -213,7 +218,7 @@ Password: emilyspass
 ❌ Forgetting to commit to Git  
 ❌ Missing screenshots  
 ❌ Demo video too long (>2 min)  
-❌ Not showing dark mode in video  
+❌ Not showing dark mode in video
 
 ## ✨ What Sets This Apart
 
@@ -223,15 +228,16 @@ Password: emilyspass
 ✅ Dark mode (bonus feature)  
 ✅ Clean, maintainable code  
 ✅ Excellent documentation  
-✅ Industry best practices  
+✅ Industry best practices
 
 ---
 
 ## 🎉 You're Ready!
 
 Everything is implemented. Just need:
+
 1. Screenshots (30 mins)
-2. Demo video (20 mins)  
+2. Demo video (20 mins)
 3. Git push (20 mins)
 
 **Total remaining: ~70 minutes**
@@ -242,4 +248,4 @@ Everything is implemented. Just need:
 
 ---
 
-*Print or save this card for quick reference!*
+_Print or save this card for quick reference!_

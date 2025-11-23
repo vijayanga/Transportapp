@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
-import { useRouter, Redirect } from 'expo-router';
-import { useAppSelector } from '../store/hooks';
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { useAppSelector } from "../store/hooks";
 
 export default function Index() {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
@@ -8,9 +8,9 @@ export default function Index() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace('/(tabs)/' as any);
+      router.replace("/(tabs)/" as any);
     } else {
-      router.replace('/login' as any);
+      router.replace("/login" as any);
     }
   }, [isAuthenticated]);
 

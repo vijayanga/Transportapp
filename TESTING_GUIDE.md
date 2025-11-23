@@ -7,6 +7,7 @@ This guide helps you test all features before submission.
 ## 🚀 Setup Testing Environment
 
 ### 1. Clean Installation Test
+
 ```bash
 # Remove node_modules
 rm -rf node_modules
@@ -19,6 +20,7 @@ npm start -- --clear
 ```
 
 ### 2. Device/Emulator Setup
+
 - [ ] iOS Simulator ready (Mac only)
 - [ ] Android Emulator ready
 - [ ] Physical device with Expo Go installed
@@ -29,7 +31,9 @@ npm start -- --clear
 ### Authentication Testing
 
 #### Registration
+
 1. **Valid Registration**
+
    - [ ] First Name: `John`
    - [ ] Last Name: `Doe`
    - [ ] Email: `john.doe@example.com`
@@ -42,6 +46,7 @@ npm start -- --clear
    - [ ] Username should appear in header
 
 2. **Validation Testing**
+
    - [ ] Empty fields → Shows "required" errors
    - [ ] Short first name (1 char) → Shows "at least 2 characters"
    - [ ] Invalid email → Shows "Invalid email address"
@@ -58,7 +63,9 @@ npm start -- --clear
    - [ ] "Already have account?" link works
 
 #### Login
+
 1. **Valid Login**
+
    - [ ] Username: `emilys`
    - [ ] Password: `emilyspass`
    - [ ] Click "Login"
@@ -66,6 +73,7 @@ npm start -- --clear
    - [ ] User name shows: "Emily" or "Emily Johnson"
 
 2. **Invalid Login**
+
    - [ ] Wrong username → Shows error
    - [ ] Wrong password → Shows error
    - [ ] Empty fields → Shows validation errors
@@ -77,6 +85,7 @@ npm start -- --clear
    - [ ] Loading indicator shows
 
 #### Persistence Testing
+
 1. [ ] Login successfully
 2. [ ] Close app completely
 3. [ ] Reopen app
@@ -88,7 +97,9 @@ npm start -- --clear
 ### Home Screen Testing
 
 #### Data Loading
+
 1. **Initial Load**
+
    - [ ] Shows loading indicator
    - [ ] Fetches destinations from API
    - [ ] Displays at least 20-30 destinations
@@ -96,6 +107,7 @@ npm start -- --clear
    - [ ] No broken images
 
 2. **Card Display**
+
    - [ ] Each card shows:
      - [ ] Destination image
      - [ ] Destination name
@@ -105,12 +117,14 @@ npm start -- --clear
      - [ ] Heart icon (favorite button)
 
 3. **Pull to Refresh**
+
    - [ ] Pull down from top
    - [ ] Shows refresh indicator
    - [ ] Reloads data
    - [ ] New data appears
 
 4. **Scrolling**
+
    - [ ] Smooth scrolling
    - [ ] All items accessible
    - [ ] No lag or stuttering
@@ -121,7 +135,9 @@ npm start -- --clear
    - [ ] Matches logged-in user
 
 #### Interactions
+
 1. **Tap Card**
+
    - [ ] Tap any destination card
    - [ ] Navigates to details screen
    - [ ] Shows correct destination details
@@ -137,37 +153,45 @@ npm start -- --clear
 ### Details Screen Testing
 
 #### Navigation
+
 1. [ ] Tap destination from home
 2. [ ] Details screen opens
 3. [ ] Back button visible in header
 4. [ ] Back button returns to home
 
 #### Content Display
+
 1. **Header Section**
+
    - [ ] Large destination image
    - [ ] Favorite button (heart icon)
    - [ ] Destination name as title
    - [ ] Status badge
 
 2. **Metadata Section**
+
    - [ ] Location with map pin icon
    - [ ] Rating with star icon
    - [ ] Review count
 
 3. **Description Section**
+
    - [ ] Description text visible
    - [ ] Readable and formatted
 
 4. **Tags Section**
+
    - [ ] Tags displayed in chips/pills
    - [ ] Multiple tags visible
    - [ ] Properly wrapped
 
 5. **What to Expect Section**
+
    - [ ] List of items with checkmark icons
    - [ ] Multiple items visible
 
 6. **Travel Tips Section**
+
    - [ ] Numbered steps visible
    - [ ] Step numbers in circles
    - [ ] Instructions readable
@@ -178,11 +202,13 @@ npm start -- --clear
    - [ ] Servings card with users icon
 
 #### Scrolling
+
 - [ ] Can scroll through all content
 - [ ] No content cut off
 - [ ] Smooth scrolling
 
 #### Favorite Toggle
+
 1. [ ] Tap heart button
 2. [ ] Heart fills/unfills
 3. [ ] Go to favorites tab
@@ -195,18 +221,22 @@ npm start -- --clear
 ### Favorites Screen Testing
 
 #### With Favorites
+
 1. **Add Items**
+
    - [ ] Add 3-4 destinations to favorites
    - [ ] Go to Favorites tab
    - [ ] All favorites appear in grid
 
 2. **Grid Display**
+
    - [ ] Two columns layout
    - [ ] Cards show image and basic info
    - [ ] Heart icons filled red
    - [ ] Proper spacing
 
 3. **Tap Card**
+
    - [ ] Tap favorite card
    - [ ] Opens details screen
    - [ ] Back button returns to favorites
@@ -217,11 +247,14 @@ npm start -- --clear
    - [ ] Grid updates immediately
 
 #### Empty State
+
 1. **Clear All Favorites**
+
    - [ ] Remove all favorites
    - [ ] Empty state appears
 
 2. **Empty State Display**
+
    - [ ] Heart icon visible
    - [ ] "No Favorites Yet" title
    - [ ] Descriptive message
@@ -232,6 +265,7 @@ npm start -- --clear
    - [ ] Navigates to Home tab
 
 #### Persistence
+
 1. [ ] Add favorites
 2. [ ] Close app
 3. [ ] Reopen app
@@ -243,7 +277,9 @@ npm start -- --clear
 ### Profile Screen Testing
 
 #### User Information
+
 1. **Display**
+
    - [ ] Avatar with user initials
    - [ ] Full name displayed
    - [ ] Email displayed
@@ -256,7 +292,9 @@ npm start -- --clear
    - [ ] White text
 
 #### Dark Mode Toggle
+
 1. **Enable Dark Mode**
+
    - [ ] Toggle switch to ON
    - [ ] Profile screen turns dark
    - [ ] Navigate to Home → dark
@@ -266,6 +304,7 @@ npm start -- --clear
    - [ ] Icons visible
 
 2. **Disable Dark Mode**
+
    - [ ] Toggle switch to OFF
    - [ ] All screens return to light
    - [ ] Proper color contrast
@@ -277,6 +316,7 @@ npm start -- --clear
    - [ ] Should still be in dark mode
 
 #### Menu Items
+
 - [ ] Edit Profile item visible
 - [ ] Settings item visible
 - [ ] Help & Support item visible
@@ -284,7 +324,9 @@ npm start -- --clear
 - [ ] All have chevron icons
 
 #### Logout
+
 1. **Logout Flow**
+
    - [ ] Tap "Logout" button
    - [ ] Confirmation alert appears
    - [ ] Tap "Cancel" → stays on profile
@@ -304,7 +346,9 @@ npm start -- --clear
 ### Navigation Testing
 
 #### Bottom Tabs
+
 1. **Tab Switching**
+
    - [ ] Tap Home tab → shows home
    - [ ] Tap Favorites tab → shows favorites
    - [ ] Tap Profile tab → shows profile
@@ -312,6 +356,7 @@ npm start -- --clear
    - [ ] Icons change color
 
 2. **Tab Icons**
+
    - [ ] Home: house icon
    - [ ] Favorites: heart icon
    - [ ] Profile: user icon
@@ -323,7 +368,9 @@ npm start -- --clear
    - [ ] Proper theming (light/dark)
 
 #### Stack Navigation
+
 1. **Forward Navigation**
+
    - [ ] Home → Details
    - [ ] Favorites → Details
    - [ ] Can navigate to multiple details
@@ -338,7 +385,9 @@ npm start -- --clear
 ### UI/UX Testing
 
 #### Responsive Design
+
 1. **Different Screen Sizes**
+
    - [ ] Test on iPhone (small)
    - [ ] Test on iPad (large)
    - [ ] Test on Android phone
@@ -350,35 +399,41 @@ npm start -- --clear
    - [ ] Landscape mode works (optional)
 
 #### Icons
+
 - [ ] All icons are Feather icons
 - [ ] Icons match their function
 - [ ] Consistent size throughout
 - [ ] Visible in both themes
 
 #### Typography
+
 - [ ] Headings clear and readable
 - [ ] Body text appropriate size
 - [ ] Good contrast
 - [ ] Consistent font weights
 
 #### Spacing
+
 - [ ] Consistent padding
 - [ ] Proper margins
 - [ ] No overlapping elements
 - [ ] Balanced whitespace
 
 #### Colors
+
 - [ ] Light mode pleasant
 - [ ] Dark mode comfortable
 - [ ] Proper contrast ratios
 - [ ] Consistent color usage
 
 #### Loading States
+
 - [ ] Loading indicators shown during API calls
 - [ ] Centered and visible
 - [ ] Themed correctly
 
 #### Error States
+
 - [ ] Network errors handled
 - [ ] API errors handled
 - [ ] User-friendly messages
@@ -389,17 +444,20 @@ npm start -- --clear
 ### Performance Testing
 
 #### Speed
+
 - [ ] App launches quickly
 - [ ] Screens load fast
 - [ ] Navigation smooth
 - [ ] No lag in scrolling
 
 #### Memory
+
 - [ ] No crashes during testing
 - [ ] Can navigate extensively
 - [ ] Images load efficiently
 
 #### Network
+
 - [ ] Works on WiFi
 - [ ] Works on cellular data
 - [ ] Handles slow connections
@@ -410,6 +468,7 @@ npm start -- --clear
 ### Dark Mode Specific Testing
 
 #### All Screens in Dark Mode
+
 1. [ ] Login screen
 2. [ ] Register screen
 3. [ ] Home screen
@@ -419,6 +478,7 @@ npm start -- --clear
 7. [ ] Profile screen
 
 #### Element Visibility
+
 - [ ] All text readable
 - [ ] All icons visible
 - [ ] Cards have contrast
@@ -430,12 +490,14 @@ npm start -- --clear
 ### Cross-Platform Testing
 
 #### iOS
+
 - [ ] All features work
 - [ ] No iOS-specific bugs
 - [ ] Keyboard behavior correct
 - [ ] Safe areas respected
 
 #### Android
+
 - [ ] All features work
 - [ ] No Android-specific bugs
 - [ ] Back button works
@@ -446,13 +508,16 @@ npm start -- --clear
 ### Data Validation Testing
 
 #### Form Validations
+
 1. **Email Validation**
+
    - [ ] `test@test.com` → Valid
    - [ ] `test` → Invalid
    - [ ] `test@` → Invalid
    - [ ] `@test.com` → Invalid
 
 2. **Password Validation**
+
    - [ ] `Test123` → Invalid (no special char needed, but need uppercase + number)
    - [ ] `test123` → Invalid (no uppercase)
    - [ ] `TEST123` → Invalid (no lowercase for our schema, but has uppercase + number)
@@ -503,21 +568,27 @@ Overall: PASS / FAIL
 ## 🐛 Common Issues & Solutions
 
 ### Issue: App won't start
-**Solution**: 
+
+**Solution**:
+
 ```bash
 npx expo start --clear
 ```
 
 ### Issue: White screen after login
+
 **Solution**: Check Redux store initialization
 
 ### Issue: Favorites not persisting
+
 **Solution**: Check AsyncStorage permissions
 
 ### Issue: API not loading
+
 **Solution**: Check internet connection, try different network
 
 ### Issue: Dark mode not working
+
 **Solution**: Check theme slice, verify toggle updates state
 
 ---
@@ -549,6 +620,7 @@ If all above works → **READY TO SUBMIT!** ✅
 ## 📹 Recording Demo Video
 
 While testing, record these specific actions:
+
 - Login process (0:15)
 - Browse and scroll destinations (0:20)
 - Open details, scroll content (0:20)

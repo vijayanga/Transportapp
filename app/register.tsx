@@ -1,24 +1,30 @@
-import React, { useState } from 'react';
+import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Formik } from "formik";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
+  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
-import { Formik } from 'formik';
-import { registerSchema } from '../utils/validation';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { loginUser } from '../store/authSlice';
-import { authAPI } from '../services/api';
-import { colors, spacing, borderRadius, fontSize, fontWeight } from '../constants/theme';
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  borderRadius,
+  colors,
+  fontSize,
+  fontWeight,
+  spacing,
+} from "../constants/theme";
+import { authAPI } from "../services/api";
+import { loginUser } from "../store/authSlice";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { registerSchema } from "../utils/validation";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -34,11 +40,14 @@ export default function RegisterScreen() {
     try {
       const userData = await authAPI.register(values);
       await dispatch(loginUser(userData));
-      Alert.alert('Success', 'Account created successfully!', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)/' as any) },
+      Alert.alert("Success", "Account created successfully!", [
+        { text: "OK", onPress: () => router.replace("/(tabs)/" as any) },
       ]);
     } catch (error: any) {
-      Alert.alert('Registration Failed', error.message || 'Something went wrong');
+      Alert.alert(
+        "Registration Failed",
+        error.message || "Something went wrong"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -46,7 +55,7 @@ export default function RegisterScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <ScrollView
@@ -56,7 +65,9 @@ export default function RegisterScreen() {
       >
         <View style={styles.header}>
           <Feather name="user-plus" size={48} color={theme.primary} />
-          <Text style={[styles.title, { color: theme.text }]}>Create Account</Text>
+          <Text style={[styles.title, { color: theme.text }]}>
+            Create Account
+          </Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             Join GoMate today
           </Text>
@@ -64,29 +75,46 @@ export default function RegisterScreen() {
 
         <Formik
           initialValues={{
-            firstName: '',
-            lastName: '',
-            email: '',
-            username: '',
-            password: '',
-            confirmPassword: '',
+            firstName: "",
+            lastName: "",
+            email: "",
+            username: "",
+            password: "",
+            confirmPassword: "",
           }}
           validationSchema={registerSchema}
           onSubmit={handleRegister}
         >
-          {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+          {({
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            values,
+            errors,
+            touched,
+          }) => (
             <View style={styles.form}>
               <View style={styles.row}>
                 <View style={[styles.inputContainer, styles.halfWidth]}>
-                  <Text style={[styles.label, { color: theme.text }]}>First Name</Text>
-                  <View style={[styles.inputWrapper, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                  <Text style={[styles.label, { color: theme.text }]}>
+                    First Name
+                  </Text>
+                  <View
+                    style={[
+                      styles.inputWrapper,
+                      {
+                        backgroundColor: theme.card,
+                        borderColor: theme.border,
+                      },
+                    ]}
+                  >
                     <TextInput
                       style={[styles.input, { color: theme.text }]}
                       placeholder="John"
                       placeholderTextColor={theme.textSecondary}
                       value={values.firstName}
-                      onChangeText={handleChange('firstName')}
-                      onBlur={handleBlur('firstName')}
+                      onChangeText={handleChange("firstName")}
+                      onBlur={handleBlur("firstName")}
                     />
                   </View>
                   {touched.firstName && errors.firstName && (
@@ -95,15 +123,25 @@ export default function RegisterScreen() {
                 </View>
 
                 <View style={[styles.inputContainer, styles.halfWidth]}>
-                  <Text style={[styles.label, { color: theme.text }]}>Last Name</Text>
-                  <View style={[styles.inputWrapper, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                  <Text style={[styles.label, { color: theme.text }]}>
+                    Last Name
+                  </Text>
+                  <View
+                    style={[
+                      styles.inputWrapper,
+                      {
+                        backgroundColor: theme.card,
+                        borderColor: theme.border,
+                      },
+                    ]}
+                  >
                     <TextInput
                       style={[styles.input, { color: theme.text }]}
                       placeholder="Doe"
                       placeholderTextColor={theme.textSecondary}
                       value={values.lastName}
-                      onChangeText={handleChange('lastName')}
-                      onBlur={handleBlur('lastName')}
+                      onChangeText={handleChange("lastName")}
+                      onBlur={handleBlur("lastName")}
                     />
                   </View>
                   {touched.lastName && errors.lastName && (
@@ -114,15 +152,25 @@ export default function RegisterScreen() {
 
               <View style={styles.inputContainer}>
                 <Text style={[styles.label, { color: theme.text }]}>Email</Text>
-                <View style={[styles.inputWrapper, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                  <Feather name="mail" size={20} color={theme.textSecondary} style={styles.inputIcon} />
+                <View
+                  style={[
+                    styles.inputWrapper,
+                    { backgroundColor: theme.card, borderColor: theme.border },
+                  ]}
+                >
+                  <Feather
+                    name="mail"
+                    size={20}
+                    color={theme.textSecondary}
+                    style={styles.inputIcon}
+                  />
                   <TextInput
                     style={[styles.input, { color: theme.text }]}
                     placeholder="john.doe@example.com"
                     placeholderTextColor={theme.textSecondary}
                     value={values.email}
-                    onChangeText={handleChange('email')}
-                    onBlur={handleBlur('email')}
+                    onChangeText={handleChange("email")}
+                    onBlur={handleBlur("email")}
                     keyboardType="email-address"
                     autoCapitalize="none"
                   />
@@ -133,16 +181,28 @@ export default function RegisterScreen() {
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: theme.text }]}>Username</Text>
-                <View style={[styles.inputWrapper, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                  <Feather name="user" size={20} color={theme.textSecondary} style={styles.inputIcon} />
+                <Text style={[styles.label, { color: theme.text }]}>
+                  Username
+                </Text>
+                <View
+                  style={[
+                    styles.inputWrapper,
+                    { backgroundColor: theme.card, borderColor: theme.border },
+                  ]}
+                >
+                  <Feather
+                    name="user"
+                    size={20}
+                    color={theme.textSecondary}
+                    style={styles.inputIcon}
+                  />
                   <TextInput
                     style={[styles.input, { color: theme.text }]}
                     placeholder="johndoe"
                     placeholderTextColor={theme.textSecondary}
                     value={values.username}
-                    onChangeText={handleChange('username')}
-                    onBlur={handleBlur('username')}
+                    onChangeText={handleChange("username")}
+                    onBlur={handleBlur("username")}
                     autoCapitalize="none"
                   />
                 </View>
@@ -152,22 +212,36 @@ export default function RegisterScreen() {
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: theme.text }]}>Password</Text>
-                <View style={[styles.inputWrapper, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                  <Feather name="lock" size={20} color={theme.textSecondary} style={styles.inputIcon} />
+                <Text style={[styles.label, { color: theme.text }]}>
+                  Password
+                </Text>
+                <View
+                  style={[
+                    styles.inputWrapper,
+                    { backgroundColor: theme.card, borderColor: theme.border },
+                  ]}
+                >
+                  <Feather
+                    name="lock"
+                    size={20}
+                    color={theme.textSecondary}
+                    style={styles.inputIcon}
+                  />
                   <TextInput
                     style={[styles.input, { color: theme.text }]}
                     placeholder="Create a strong password"
                     placeholderTextColor={theme.textSecondary}
                     value={values.password}
-                    onChangeText={handleChange('password')}
-                    onBlur={handleBlur('password')}
+                    onChangeText={handleChange("password")}
+                    onBlur={handleBlur("password")}
                     secureTextEntry={!showPassword}
                     autoCapitalize="none"
                   />
-                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
                     <Feather
-                      name={showPassword ? 'eye-off' : 'eye'}
+                      name={showPassword ? "eye-off" : "eye"}
                       size={20}
                       color={theme.textSecondary}
                       style={styles.inputIcon}
@@ -180,22 +254,36 @@ export default function RegisterScreen() {
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: theme.text }]}>Confirm Password</Text>
-                <View style={[styles.inputWrapper, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                  <Feather name="lock" size={20} color={theme.textSecondary} style={styles.inputIcon} />
+                <Text style={[styles.label, { color: theme.text }]}>
+                  Confirm Password
+                </Text>
+                <View
+                  style={[
+                    styles.inputWrapper,
+                    { backgroundColor: theme.card, borderColor: theme.border },
+                  ]}
+                >
+                  <Feather
+                    name="lock"
+                    size={20}
+                    color={theme.textSecondary}
+                    style={styles.inputIcon}
+                  />
                   <TextInput
                     style={[styles.input, { color: theme.text }]}
                     placeholder="Confirm your password"
                     placeholderTextColor={theme.textSecondary}
                     value={values.confirmPassword}
-                    onChangeText={handleChange('confirmPassword')}
-                    onBlur={handleBlur('confirmPassword')}
+                    onChangeText={handleChange("confirmPassword")}
+                    onBlur={handleBlur("confirmPassword")}
                     secureTextEntry={!showConfirmPassword}
                     autoCapitalize="none"
                   />
-                  <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  <TouchableOpacity
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
                     <Feather
-                      name={showConfirmPassword ? 'eye-off' : 'eye'}
+                      name={showConfirmPassword ? "eye-off" : "eye"}
                       size={20}
                       color={theme.textSecondary}
                       style={styles.inputIcon}
@@ -220,11 +308,15 @@ export default function RegisterScreen() {
               </TouchableOpacity>
 
               <View style={styles.footer}>
-                <Text style={[styles.footerText, { color: theme.textSecondary }]}>
-                  Already have an account?{' '}
+                <Text
+                  style={[styles.footerText, { color: theme.textSecondary }]}
+                >
+                  Already have an account?{" "}
                 </Text>
                 <TouchableOpacity onPress={() => router.back()}>
-                  <Text style={[styles.linkText, { color: theme.primary }]}>Login</Text>
+                  <Text style={[styles.linkText, { color: theme.primary }]}>
+                    Login
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -241,12 +333,12 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: spacing.lg,
     paddingTop: spacing.xl,
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: spacing.lg,
   },
   title: {
@@ -259,14 +351,14 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   form: {
-    width: '100%',
+    width: "100%",
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   halfWidth: {
-    width: '48%',
+    width: "48%",
   },
   inputContainer: {
     marginBottom: spacing.md,
@@ -277,8 +369,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: borderRadius.md,
     borderWidth: 1,
     paddingHorizontal: spacing.md,
@@ -299,18 +391,18 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: borderRadius.md,
     paddingVertical: spacing.md,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: spacing.md,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: fontSize.md,
     fontWeight: fontWeight.semibold,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: spacing.lg,
   },
   footerText: {

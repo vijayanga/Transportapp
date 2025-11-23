@@ -1,12 +1,12 @@
-import React, { useEffect } from 'react';
-import { Provider } from 'react-redux';
-import { store } from '../store';
-import { Stack } from 'expo-router';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { loadUserFromStorage } from '../store/authSlice';
-import { loadFavorites } from '../store/favoritesSlice';
-import { loadTheme } from '../store/themeSlice';
-import { ActivityIndicator, View } from 'react-native';
+import { Stack } from "expo-router";
+import React, { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
+import { Provider } from "react-redux";
+import { store } from "../store";
+import { loadUserFromStorage } from "../store/authSlice";
+import { loadFavorites } from "../store/favoritesSlice";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { loadTheme } from "../store/themeSlice";
 
 function AppInitializer({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
@@ -27,7 +27,7 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#007AFF" />
       </View>
     );
@@ -45,12 +45,12 @@ export default function RootLayout() {
           <Stack.Screen name="login" />
           <Stack.Screen name="register" />
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen 
-            name="details/[id]" 
+          <Stack.Screen
+            name="details/[id]"
             options={{
               headerShown: true,
-              title: 'Details',
-              headerBackTitle: 'Back',
+              title: "Details",
+              headerBackTitle: "Back",
             }}
           />
         </Stack>

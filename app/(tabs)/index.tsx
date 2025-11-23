@@ -1,20 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
   ActivityIndicator,
+  FlatList,
+  Image,
   RefreshControl,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
-import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { destinationsAPI } from '../../services/api';
-import { toggleFavorite } from '../../store/favoritesSlice';
-import { colors, spacing, borderRadius, fontSize, fontWeight } from '../../constants/theme';
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  borderRadius,
+  colors,
+  fontSize,
+  fontWeight,
+  spacing,
+} from "../../constants/theme";
+import { destinationsAPI } from "../../services/api";
+import { toggleFavorite } from "../../store/favoritesSlice";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
 interface Destination {
   id: number;
@@ -43,7 +49,7 @@ export default function HomeScreen() {
       const data = await destinationsAPI.getDestinations();
       setDestinations(data);
     } catch (error) {
-      console.error('Error fetching destinations:', error);
+      console.error("Error fetching destinations:", error);
     } finally {
       setIsLoading(false);
       setRefreshing(false);
@@ -79,15 +85,18 @@ export default function HomeScreen() {
         onPress={() => handleFavoriteToggle(item)}
       >
         <Feather
-          name={isFavorite(item.id) ? 'heart' : 'heart'}
+          name={isFavorite(item.id) ? "heart" : "heart"}
           size={20}
           color={isFavorite(item.id) ? colors.light.error : theme.textSecondary}
-          fill={isFavorite(item.id) ? colors.light.error : 'transparent'}
+          fill={isFavorite(item.id) ? colors.light.error : "transparent"}
         />
       </TouchableOpacity>
       <View style={styles.cardContent}>
         <View style={styles.cardHeader}>
-          <Text style={[styles.cardTitle, { color: theme.text }]} numberOfLines={1}>
+          <Text
+            style={[styles.cardTitle, { color: theme.text }]}
+            numberOfLines={1}
+          >
             {item.name}
           </Text>
           {item.status && (
@@ -96,9 +105,9 @@ export default function HomeScreen() {
                 styles.statusBadge,
                 {
                   backgroundColor:
-                    item.status === 'Popular'
+                    item.status === "Popular"
                       ? theme.success
-                      : item.status === 'Upcoming'
+                      : item.status === "Upcoming"
                       ? theme.warning
                       : theme.primary,
                 },
@@ -136,7 +145,9 @@ export default function HomeScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
+      <View
+        style={[styles.centerContainer, { backgroundColor: theme.background }]}
+      >
         <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
@@ -146,9 +157,11 @@ export default function HomeScreen() {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
         <View>
-          <Text style={[styles.greeting, { color: theme.textSecondary }]}>Welcome back,</Text>
+          <Text style={[styles.greeting, { color: theme.textSecondary }]}>
+            Welcome back,
+          </Text>
           <Text style={[styles.userName, { color: theme.text }]}>
-            {user?.firstName || 'Traveler'}
+            {user?.firstName || "Traveler"}
           </Text>
         </View>
       </View>
@@ -177,8 +190,8 @@ const styles = StyleSheet.create({
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
     padding: spacing.lg,
@@ -199,29 +212,29 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: borderRadius.lg,
     marginBottom: spacing.lg,
-    overflow: 'hidden',
+    overflow: "hidden",
     elevation: 3,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
   },
   cardImage: {
-    width: '100%',
+    width: "100%",
     height: 200,
-    backgroundColor: '#E1E1E1',
+    backgroundColor: "#E1E1E1",
   },
   favoriteButton: {
-    position: 'absolute',
+    position: "absolute",
     top: spacing.md,
     right: spacing.md,
     width: 40,
     height: 40,
     borderRadius: borderRadius.full,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -230,9 +243,9 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: spacing.xs,
   },
   cardTitle: {
@@ -247,18 +260,18 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.sm,
   },
   statusText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: fontSize.xs,
     fontWeight: fontWeight.medium,
   },
   cardMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: spacing.sm,
   },
   metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginRight: spacing.md,
   },
   metaText: {

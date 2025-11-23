@@ -1,22 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import { Feather } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
   ActivityIndicator,
-  TouchableOpacity,
   Dimensions,
-} from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
-import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { destinationsAPI } from '../../services/api';
-import { toggleFavorite } from '../../store/favoritesSlice';
-import { colors, spacing, borderRadius, fontSize, fontWeight } from '../../constants/theme';
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  borderRadius,
+  colors,
+  fontSize,
+  fontWeight,
+  spacing,
+} from "../../constants/theme";
+import { destinationsAPI } from "../../services/api";
+import { toggleFavorite } from "../../store/favoritesSlice";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 export default function DetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -38,13 +44,14 @@ export default function DetailsScreen() {
       const data = await destinationsAPI.getDestinationById(Number(id));
       setDestination(data);
     } catch (error) {
-      console.error('Error fetching destination details:', error);
+      console.error("Error fetching destination details:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isFavorite = destination && favorites.some((fav) => fav.id === destination.id);
+  const isFavorite =
+    destination && favorites.some((fav) => fav.id === destination.id);
 
   const handleFavoriteToggle = () => {
     if (destination) {
@@ -54,7 +61,9 @@ export default function DetailsScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+      <View
+        style={[styles.loadingContainer, { backgroundColor: theme.background }]}
+      >
         <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
@@ -62,17 +71,23 @@ export default function DetailsScreen() {
 
   if (!destination) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+      <View
+        style={[styles.loadingContainer, { backgroundColor: theme.background }]}
+      >
         <Feather name="alert-circle" size={48} color={theme.textSecondary} />
-        <Text style={[styles.errorText, { color: theme.text }]}>Destination not found</Text>
+        <Text style={[styles.errorText, { color: theme.text }]}>
+          Destination not found
+        </Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.background }]}
+    >
       <Image source={{ uri: destination.image }} style={styles.headerImage} />
-      
+
       <TouchableOpacity
         style={[styles.favoriteButton, { backgroundColor: theme.background }]}
         onPress={handleFavoriteToggle}
@@ -81,22 +96,24 @@ export default function DetailsScreen() {
           name="heart"
           size={24}
           color={isFavorite ? colors.light.error : theme.textSecondary}
-          fill={isFavorite ? colors.light.error : 'transparent'}
+          fill={isFavorite ? colors.light.error : "transparent"}
         />
       </TouchableOpacity>
 
       <View style={styles.content}>
         <View style={styles.titleSection}>
-          <Text style={[styles.title, { color: theme.text }]}>{destination.name}</Text>
+          <Text style={[styles.title, { color: theme.text }]}>
+            {destination.name}
+          </Text>
           {destination.status && (
             <View
               style={[
                 styles.statusBadge,
                 {
                   backgroundColor:
-                    destination.status === 'Popular'
+                    destination.status === "Popular"
                       ? theme.success
-                      : destination.status === 'Upcoming'
+                      : destination.status === "Upcoming"
                       ? theme.warning
                       : theme.primary,
                 },
@@ -110,13 +127,16 @@ export default function DetailsScreen() {
         <View style={styles.metaSection}>
           <View style={styles.metaItem}>
             <Feather name="map-pin" size={20} color={theme.primary} />
-            <Text style={[styles.metaText, { color: theme.text }]}>{destination.country}</Text>
+            <Text style={[styles.metaText, { color: theme.text }]}>
+              {destination.country}
+            </Text>
           </View>
           {destination.rating && (
             <View style={styles.metaItem}>
               <Feather name="star" size={20} color={theme.warning} />
               <Text style={[styles.metaText, { color: theme.text }]}>
-                {destination.rating.toFixed(1)} ({destination.reviewCount || 0} reviews)
+                {destination.rating.toFixed(1)} ({destination.reviewCount || 0}{" "}
+                reviews)
               </Text>
             </View>
           )}
@@ -125,7 +145,9 @@ export default function DetailsScreen() {
         <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Description</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            Description
+          </Text>
           <Text style={[styles.description, { color: theme.textSecondary }]}>
             {destination.description}
           </Text>
@@ -133,11 +155,21 @@ export default function DetailsScreen() {
 
         {destination.tags && destination.tags.length > 0 && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Tags</Text>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Tags
+            </Text>
             <View style={styles.tagsContainer}>
               {destination.tags.map((tag: string, index: number) => (
-                <View key={index} style={[styles.tag, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                  <Text style={[styles.tagText, { color: theme.text }]}>{tag}</Text>
+                <View
+                  key={index}
+                  style={[
+                    styles.tag,
+                    { backgroundColor: theme.card, borderColor: theme.border },
+                  ]}
+                >
+                  <Text style={[styles.tagText, { color: theme.text }]}>
+                    {tag}
+                  </Text>
                 </View>
               ))}
             </View>
@@ -146,29 +178,58 @@ export default function DetailsScreen() {
 
         {destination.ingredients && destination.ingredients.length > 0 && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>What to Expect</Text>
-            {destination.ingredients.slice(0, 5).map((item: string, index: number) => (
-              <View key={index} style={styles.listItem}>
-                <Feather name="check-circle" size={16} color={theme.success} />
-                <Text style={[styles.listItemText, { color: theme.textSecondary }]}>{item}</Text>
-              </View>
-            ))}
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              What to Expect
+            </Text>
+            {destination.ingredients
+              .slice(0, 5)
+              .map((item: string, index: number) => (
+                <View key={index} style={styles.listItem}>
+                  <Feather
+                    name="check-circle"
+                    size={16}
+                    color={theme.success}
+                  />
+                  <Text
+                    style={[
+                      styles.listItemText,
+                      { color: theme.textSecondary },
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                </View>
+              ))}
           </View>
         )}
 
         {destination.instructions && destination.instructions.length > 0 && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Travel Tips</Text>
-            {destination.instructions.slice(0, 3).map((instruction: string, index: number) => (
-              <View key={index} style={styles.instructionItem}>
-                <View style={[styles.stepNumber, { backgroundColor: theme.primary }]}>
-                  <Text style={styles.stepNumberText}>{index + 1}</Text>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Travel Tips
+            </Text>
+            {destination.instructions
+              .slice(0, 3)
+              .map((instruction: string, index: number) => (
+                <View key={index} style={styles.instructionItem}>
+                  <View
+                    style={[
+                      styles.stepNumber,
+                      { backgroundColor: theme.primary },
+                    ]}
+                  >
+                    <Text style={styles.stepNumberText}>{index + 1}</Text>
+                  </View>
+                  <Text
+                    style={[
+                      styles.instructionText,
+                      { color: theme.textSecondary },
+                    ]}
+                  >
+                    {instruction}
+                  </Text>
                 </View>
-                <Text style={[styles.instructionText, { color: theme.textSecondary }]}>
-                  {instruction}
-                </Text>
-              </View>
-            ))}
+              ))}
           </View>
         )}
 
@@ -176,22 +237,34 @@ export default function DetailsScreen() {
           {destination.prepTime && (
             <View style={[styles.infoCard, { backgroundColor: theme.card }]}>
               <Feather name="clock" size={24} color={theme.primary} />
-              <Text style={[styles.infoValue, { color: theme.text }]}>{destination.prepTime} min</Text>
-              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Duration</Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>
+                {destination.prepTime} min
+              </Text>
+              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
+                Duration
+              </Text>
             </View>
           )}
           {destination.caloriesPerServing && (
             <View style={[styles.infoCard, { backgroundColor: theme.card }]}>
               <Feather name="activity" size={24} color={theme.primary} />
-              <Text style={[styles.infoValue, { color: theme.text }]}>{destination.caloriesPerServing}</Text>
-              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Calories</Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>
+                {destination.caloriesPerServing}
+              </Text>
+              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
+                Calories
+              </Text>
             </View>
           )}
           {destination.servings && (
             <View style={[styles.infoCard, { backgroundColor: theme.card }]}>
               <Feather name="users" size={24} color={theme.primary} />
-              <Text style={[styles.infoValue, { color: theme.text }]}>{destination.servings}</Text>
-              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Servings</Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>
+                {destination.servings}
+              </Text>
+              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
+                Servings
+              </Text>
             </View>
           )}
         </View>
@@ -206,8 +279,8 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   errorText: {
     fontSize: fontSize.lg,
@@ -216,19 +289,19 @@ const styles = StyleSheet.create({
   headerImage: {
     width: width,
     height: 300,
-    backgroundColor: '#E1E1E1',
+    backgroundColor: "#E1E1E1",
   },
   favoriteButton: {
-    position: 'absolute',
+    position: "absolute",
     top: spacing.lg,
     right: spacing.lg,
     width: 48,
     height: 48,
     borderRadius: borderRadius.full,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -237,9 +310,9 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   titleSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: spacing.md,
   },
   title: {
@@ -254,7 +327,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
   },
   statusText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
   },
@@ -262,8 +335,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: spacing.sm,
   },
   metaText: {
@@ -287,8 +360,8 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.sm,
   },
   tag: {
@@ -301,8 +374,8 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
   },
   listItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     marginBottom: spacing.sm,
   },
   listItemText: {
@@ -311,19 +384,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   instructionItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: spacing.md,
   },
   stepNumber: {
     width: 28,
     height: 28,
     borderRadius: borderRadius.full,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: spacing.md,
   },
   stepNumberText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: fontSize.sm,
     fontWeight: fontWeight.bold,
   },
@@ -333,15 +406,15 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   infoGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: spacing.md,
   },
   infoCard: {
     flex: 1,
     padding: spacing.md,
     borderRadius: borderRadius.md,
-    alignItems: 'center',
+    alignItems: "center",
     marginHorizontal: spacing.xs,
   },
   infoValue: {
