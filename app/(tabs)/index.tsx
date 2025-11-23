@@ -24,6 +24,7 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
 interface Destination {
   id: number;
+  stationCode?: string;
   name: string;
   description: string;
   image: string;
@@ -33,10 +34,15 @@ interface Destination {
   status?: string;
   type?: string;
   route?: string;
+  lineCode?: string;
   schedule?: string;
   operatingHours?: string;
   fare?: string;
   stops?: number;
+  features?: string[];
+  address?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export default function HomeScreen() {
@@ -86,121 +92,143 @@ export default function HomeScreen() {
       onPress={() => router.push(`/details/${item.id}` as any)}
       activeOpacity={0.7}
     >
-      <Image source={{ uri: item.image }} style={styles.cardImage} />
-      <TouchableOpacity
-        style={[styles.favoriteButton, { backgroundColor: theme.background }]}
-        onPress={() => handleFavoriteToggle(item)}
-      >
-        <Feather
-          name={isFavorite(item.id) ? "heart" : "heart"}
-          size={20}
-          color={isFavorite(item.id) ? colors.light.error : theme.textSecondary}
-          fill={isFavorite(item.id) ? colors.light.error : "transparent"}
-        />
-      </TouchableOpacity>
-      <View style={styles.cardContent}>
-        <View style={styles.cardHeader}>
-          <Text
-            style={[styles.cardTitle, { color: theme.text }]}
-            numberOfLines={1}
+      <View style={styles.cardImageContainer}>
+        <Image source={{ uri: item.image }} style={styles.cardImage} />
+        <View style={styles.imageOverlay} />
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={() => handleFavoriteToggle(item)}
+        >
+          <Feather
+            name={isFavorite(item.id) ? "heart" : "heart"}
+            size={22}
+            color={isFavorite(item.id) ? colors.light.error : "#fff"}
+            fill={isFavorite(item.id) ? colors.light.error : "transparent"}
+          />
+        </TouchableOpacity>
+        {item.status && (
+          <View
+            style={[
+              styles.statusBadgeOverlay,
+              {
+                backgroundColor:
+                  item.status === "Popular"
+                    ? theme.success
+                    : item.status === "Modern"
+                    ? theme.primary
+                    : theme.warning,
+              },
+            ]}
           >
-            {item.name}
-          </Text>
-          {item.status && (
-            <View
-              style={[
-                styles.statusBadge,
-                {
-                  backgroundColor:
-                    item.status === "Popular"
-                      ? theme.success
-                      : item.status === "Upcoming"
-                      ? theme.warning
-                      : theme.primary,
-                },
-              ]}
-            >
-              <Text style={styles.statusText}>{item.status}</Text>
-            </View>
-          )}
-        </View>
+            <Text style={styles.statusText}>{item.status}</Text>
+          </View>
+        )}
+      </View>
 
-        {/* Transport Type & Route */}
-        {item.type && (
-          <View style={styles.transportInfo}>
-            <View style={styles.metaItem}>
-              <Feather name="navigation" size={14} color={theme.primary} />
-              <Text
-                style={[
-                  styles.metaText,
-                  { color: theme.text, fontWeight: fontWeight.medium },
-                ]}
-              >
-                {item.type}
-              </Text>
-            </View>
-            {item.route && (
-              <View style={styles.metaItem}>
-                <Feather
-                  name="git-branch"
-                  size={14}
-                  color={theme.textSecondary}
-                />
-                <Text style={[styles.metaText, { color: theme.textSecondary }]}>
-                  {item.route}
-                </Text>
-              </View>
-            )}
+      <View style={styles.cardContent}>
+        <Text
+          style={[styles.cardTitle, { color: theme.text }]}
+          numberOfLines={1}
+        >
+          {item.name}
+        </Text>
+        {item.stationCode && (
+          <View
+            style={[
+              styles.codeContainer,
+              { backgroundColor: isDark ? "#333" : "#f0f0f0" },
+            ]}
+          >
+            <Text style={[styles.stationCodeBadge, { color: theme.primary }]}>
+              {item.stationCode}
+            </Text>
           </View>
         )}
 
-        {/* Location & Rating */}
-        <View style={styles.cardMeta}>
-          <View style={styles.metaItem}>
+        {/* Route Info */}
+        {item.route && (
+          <View style={styles.routeContainer}>
+            <Feather name="git-branch" size={16} color={theme.primary} />
+            <Text
+              style={[styles.routeText, { color: theme.text }]}
+              numberOfLines={1}
+            >
+              {item.route}
+            </Text>
+          </View>
+        )}
+
+        {/* Location & Rating Row */}
+        <View style={styles.infoRow}>
+          <View style={styles.locationContainer}>
             <Feather name="map-pin" size={14} color={theme.textSecondary} />
-            <Text style={[styles.metaText, { color: theme.textSecondary }]}>
-              {item.city}, {item.country}
+            <Text
+              style={[styles.locationText, { color: theme.textSecondary }]}
+              numberOfLines={1}
+            >
+              {item.city}
             </Text>
           </View>
           {item.rating && (
-            <View style={styles.metaItem}>
-              <Feather name="star" size={14} color={theme.warning} />
-              <Text style={[styles.metaText, { color: theme.textSecondary }]}>
+            <View
+              style={[
+                styles.ratingContainer,
+                { backgroundColor: isDark ? "#333" : "#FFF8E1" },
+              ]}
+            >
+              <Feather name="star" size={14} color="#FFB300" />
+              <Text style={[styles.ratingText, { color: theme.text }]}>
                 {item.rating.toFixed(1)}
               </Text>
             </View>
           )}
         </View>
 
-        {/* Schedule & Fare */}
-        {(item.schedule || item.fare) && (
-          <View style={styles.scheduleInfo}>
-            {item.schedule && (
-              <View style={styles.infoChip}>
-                <Feather name="clock" size={12} color={theme.primary} />
-                <Text style={[styles.infoChipText, { color: theme.text }]}>
-                  {item.schedule}
-                </Text>
-              </View>
-            )}
-            {item.fare && (
-              <View style={styles.infoChip}>
-                <Feather name="dollar-sign" size={12} color={theme.success} />
-                <Text style={[styles.infoChipText, { color: theme.text }]}>
-                  {item.fare}
-                </Text>
-              </View>
-            )}
-            {item.stops && (
-              <View style={styles.infoChip}>
-                <Feather name="disc" size={12} color={theme.textSecondary} />
-                <Text style={[styles.infoChipText, { color: theme.text }]}>
-                  {item.stops} stops
-                </Text>
-              </View>
-            )}
-          </View>
-        )}
+        {/* Quick Info Chips */}
+        <View style={styles.chipsContainer}>
+          {item.fare && (
+            <View
+              style={[
+                styles.chip,
+                { backgroundColor: isDark ? "#1a3d1a" : "#E8F5E9" },
+              ]}
+            >
+              <Feather name="dollar-sign" size={12} color={theme.success} />
+              <Text style={[styles.chipText, { color: theme.success }]}>
+                {item.fare}
+              </Text>
+            </View>
+          )}
+          {item.stops && (
+            <View
+              style={[
+                styles.chip,
+                { backgroundColor: isDark ? "#1a2d3d" : "#E3F2FD" },
+              ]}
+            >
+              <Feather name="disc" size={12} color={theme.primary} />
+              <Text style={[styles.chipText, { color: theme.primary }]}>
+                {item.stops} stops
+              </Text>
+            </View>
+          )}
+          {item.schedule && (
+            <View
+              style={[
+                styles.chip,
+                { backgroundColor: isDark ? "#3d3d1a" : "#FFF9C4" },
+              ]}
+            >
+              <Feather name="clock" size={12} color={theme.warning} />
+              <Text
+                style={[styles.chipText, { color: theme.warning }]}
+                numberOfLines={1}
+              >
+                Daily
+              </Text>
+            </View>
+          )}
+        </View>
 
         <Text
           style={[styles.cardDescription, { color: theme.textSecondary }]}
@@ -282,98 +310,135 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     marginBottom: spacing.lg,
     overflow: "hidden",
-    elevation: 3,
+    elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.12,
     shadowRadius: 8,
+  },
+  cardImageContainer: {
+    position: "relative",
+    width: "100%",
+    height: 180,
   },
   cardImage: {
     width: "100%",
-    height: 200,
+    height: "100%",
     backgroundColor: "#E1E1E1",
+  },
+  imageOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.15)",
   },
   favoriteButton: {
     position: "absolute",
-    top: spacing.md,
-    right: spacing.md,
-    width: 40,
-    height: 40,
+    top: spacing.sm,
+    right: spacing.sm,
+    width: 36,
+    height: 36,
     borderRadius: borderRadius.full,
+    backgroundColor: "rgba(0,0,0,0.3)",
     justifyContent: "center",
     alignItems: "center",
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    backdropFilter: "blur(10px)",
   },
-  cardContent: {
-    padding: spacing.md,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: spacing.xs,
-  },
-  cardTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    flex: 1,
-    marginRight: spacing.sm,
-  },
-  statusBadge: {
+  statusBadgeOverlay: {
+    position: "absolute",
+    top: spacing.sm,
+    left: spacing.sm,
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
+    paddingVertical: 4,
     borderRadius: borderRadius.sm,
   },
   statusText: {
     color: "#FFFFFF",
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
+    fontWeight: fontWeight.semibold,
   },
-  cardMeta: {
+  cardContent: {
+    padding: spacing.md,
+  },
+  cardTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    marginBottom: spacing.xs,
+  },
+  codeContainer: {
+    alignSelf: "flex-start",
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: borderRadius.sm,
+    marginBottom: spacing.sm,
+  },
+  stationCodeBadge: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.bold,
+    fontFamily: "monospace",
+    letterSpacing: 1,
+  },
+  routeContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: spacing.sm,
+    gap: spacing.xs,
   },
-  metaItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: spacing.md,
-  },
-  metaText: {
-    fontSize: fontSize.xs,
-    marginLeft: spacing.xs,
-  },
-  cardDescription: {
+  routeText: {
     fontSize: fontSize.sm,
-    lineHeight: 20,
+    fontWeight: fontWeight.medium,
+    flex: 1,
   },
-  transportInfo: {
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
+  locationContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: spacing.xs,
-    gap: spacing.sm,
+    gap: spacing.xs,
+    flex: 1,
   },
-  scheduleInfo: {
+  locationText: {
+    fontSize: fontSize.xs,
+    flex: 1,
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: borderRadius.sm,
+  },
+  ratingText: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
+  },
+  chipsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.xs,
     marginBottom: spacing.sm,
   },
-  infoChip: {
+  chip: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.05)",
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
+    paddingVertical: 4,
     borderRadius: borderRadius.sm,
     gap: 4,
   },
-  infoChipText: {
+  chipText: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
+    fontWeight: fontWeight.semibold,
+  },
+  cardDescription: {
+    fontSize: fontSize.sm,
+    lineHeight: 20,
   },
 });
