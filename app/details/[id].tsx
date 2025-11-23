@@ -24,6 +24,19 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
 const { width } = Dimensions.get("window");
 
+// Helper function to get Metro line colors
+const getLineColor = (line: string): string => {
+  const colors: { [key: string]: string } = {
+    RD: "#E51937", // Red Line
+    BL: "#1E88E5", // Blue Line
+    YL: "#FFD700", // Yellow Line
+    OR: "#FF8C00", // Orange Line
+    GR: "#00B140", // Green Line
+    SV: "#9D9D9D", // Silver Line
+  };
+  return colors[line] || "#666666";
+};
+
 export default function DetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
@@ -34,19 +47,74 @@ export default function DetailsScreen() {
 
   const [destination, setDestination] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [trainPredictions, setTrainPredictions] = useState<any[]>([]);
+  const [loadingTrains, setLoadingTrains] = useState(false);
+  const [stationTimings, setStationTimings] = useState<any>(null);
+  const [elevatorIncidents, setElevatorIncidents] = useState<any[]>([]);
+  const [railIncidents, setRailIncidents] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<
+    "arrivals" | "timings" | "alerts" | "route"
+  >("arrivals");
 
   useEffect(() => {
     fetchDestinationDetails();
+    fetchRailIncidents();
   }, [id]);
 
   const fetchDestinationDetails = async () => {
     try {
       const data = await destinationsAPI.getDestinationById(Number(id));
       setDestination(data);
+
+      // Fetch real-time train arrivals if station code exists
+      if (data.stationCode) {
+        fetchTrainArrivals(data.stationCode);
+        fetchStationTimings(data.stationCode);
+        fetchElevatorIncidents(data.stationCode);
+      }
     } catch (error) {
       console.error("Error fetching destination details:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchTrainArrivals = async (stationCode: string) => {
+    try {
+      setLoadingTrains(true);
+      const trains = await destinationsAPI.getTrainPredictions(stationCode);
+      setTrainPredictions(trains);
+    } catch (error) {
+      console.error("Error fetching train predictions:", error);
+    } finally {
+      setLoadingTrains(false);
+    }
+  };
+
+  const fetchStationTimings = async (stationCode: string) => {
+    try {
+      const timings = await destinationsAPI.getStationTimings(stationCode);
+      setStationTimings(timings);
+    } catch (error) {
+      console.error("Error fetching station timings:", error);
+    }
+  };
+
+  const fetchElevatorIncidents = async (stationCode: string) => {
+    try {
+      const incidents = await destinationsAPI.getElevatorIncidents(stationCode);
+      setElevatorIncidents(incidents);
+    } catch (error) {
+      console.error("Error fetching elevator incidents:", error);
+    }
+  };
+
+  const fetchRailIncidents = async () => {
+    try {
+      const incidents = await destinationsAPI.getRailIncidents();
+      setRailIncidents(incidents);
+    } catch (error) {
+      console.error("Error fetching rail incidents:", error);
     }
   };
 
@@ -102,9 +170,18 @@ export default function DetailsScreen() {
 
       <View style={styles.content}>
         <View style={styles.titleSection}>
-          <Text style={[styles.title, { color: theme.text }]}>
-            {destination.name}
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.title, { color: theme.text }]}>
+              {destination.name}
+            </Text>
+            {destination.stationCode && (
+              <Text
+                style={[styles.stationCode, { color: theme.textSecondary }]}
+              >
+                Station Code: {destination.stationCode}
+              </Text>
+            )}
+          </View>
           {destination.status && (
             <View
               style={[
@@ -113,9 +190,9 @@ export default function DetailsScreen() {
                   backgroundColor:
                     destination.status === "Popular"
                       ? theme.success
-                      : destination.status === "Upcoming"
-                      ? theme.warning
-                      : theme.primary,
+                      : destination.status === "Modern"
+                      ? theme.primary
+                      : theme.warning,
                 },
               ]}
             >
@@ -128,25 +205,14 @@ export default function DetailsScreen() {
           <View style={styles.metaItem}>
             <Feather name="map-pin" size={20} color={theme.primary} />
             <Text style={[styles.metaText, { color: theme.text }]}>
-              {destination.city
-                ? `${destination.city}, ${destination.country}`
-                : destination.country}
+              {destination.city}, {destination.country}
             </Text>
           </View>
-          {destination.transportType && (
-            <View style={styles.metaItem}>
-              <Feather name="navigation" size={20} color={theme.primary} />
-              <Text style={[styles.metaText, { color: theme.text }]}>
-                {destination.transportType}
-              </Text>
-            </View>
-          )}
           {destination.rating && (
             <View style={styles.metaItem}>
               <Feather name="star" size={20} color={theme.warning} />
               <Text style={[styles.metaText, { color: theme.text }]}>
-                {destination.rating.toFixed(1)} ({destination.reviewCount || 0}{" "}
-                reviews)
+                {destination.rating.toFixed(1)}
               </Text>
             </View>
           )}
@@ -154,62 +220,730 @@ export default function DetailsScreen() {
 
         <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
-            Description
-          </Text>
-          <Text style={[styles.description, { color: theme.textSecondary }]}>
-            {destination.description}
-          </Text>
-        </View>
-
-        {destination.tags && destination.tags.length > 0 && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Tags
-            </Text>
-            <View style={styles.tagsContainer}>
-              {destination.tags.map((tag: string, index: number) => (
-                <View
-                  key={index}
+        {/* Tab Navigation */}
+        {destination.stationCode && (
+          <>
+            <View style={styles.tabContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.tab,
+                  activeTab === "arrivals" && styles.activeTab,
+                  activeTab === "arrivals" && {
+                    borderBottomColor: theme.primary,
+                  },
+                ]}
+                onPress={() => setActiveTab("arrivals")}
+              >
+                <Feather
+                  name="activity"
+                  size={18}
+                  color={
+                    activeTab === "arrivals"
+                      ? theme.primary
+                      : theme.textSecondary
+                  }
+                />
+                <Text
                   style={[
-                    styles.tag,
-                    { backgroundColor: theme.card, borderColor: theme.border },
+                    styles.tabText,
+                    {
+                      color:
+                        activeTab === "arrivals"
+                          ? theme.primary
+                          : theme.textSecondary,
+                    },
                   ]}
                 >
-                  <Text style={[styles.tagText, { color: theme.text }]}>
-                    {tag}
+                  Live Arrivals
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.tab,
+                  activeTab === "timings" && styles.activeTab,
+                  activeTab === "timings" && {
+                    borderBottomColor: theme.primary,
+                  },
+                ]}
+                onPress={() => setActiveTab("timings")}
+              >
+                <Feather
+                  name="clock"
+                  size={18}
+                  color={
+                    activeTab === "timings"
+                      ? theme.primary
+                      : theme.textSecondary
+                  }
+                />
+                <Text
+                  style={[
+                    styles.tabText,
+                    {
+                      color:
+                        activeTab === "timings"
+                          ? theme.primary
+                          : theme.textSecondary,
+                    },
+                  ]}
+                >
+                  Schedule
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.tab,
+                  activeTab === "alerts" && styles.activeTab,
+                  activeTab === "alerts" && {
+                    borderBottomColor: theme.primary,
+                  },
+                ]}
+                onPress={() => setActiveTab("alerts")}
+              >
+                <Feather
+                  name="alert-circle"
+                  size={18}
+                  color={
+                    activeTab === "alerts" ? theme.primary : theme.textSecondary
+                  }
+                />
+                <Text
+                  style={[
+                    styles.tabText,
+                    {
+                      color:
+                        activeTab === "alerts"
+                          ? theme.primary
+                          : theme.textSecondary,
+                    },
+                  ]}
+                >
+                  Alerts
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.tab,
+                  activeTab === "route" && styles.activeTab,
+                  activeTab === "route" && { borderBottomColor: theme.primary },
+                ]}
+                onPress={() => setActiveTab("route")}
+              >
+                <Feather
+                  name="map"
+                  size={18}
+                  color={
+                    activeTab === "route" ? theme.primary : theme.textSecondary
+                  }
+                />
+                <Text
+                  style={[
+                    styles.tabText,
+                    {
+                      color:
+                        activeTab === "route"
+                          ? theme.primary
+                          : theme.textSecondary,
+                    },
+                  ]}
+                >
+                  Info
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Tab Content */}
+            <View style={styles.tabContent}>
+              {/* Live Arrivals Tab */}
+              {activeTab === "arrivals" && (
+                <View style={styles.section}>
+                  <View style={styles.sectionHeader}>
+                    <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                      Next Trains
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() =>
+                        fetchTrainArrivals(destination.stationCode)
+                      }
+                    >
+                      <Feather
+                        name="refresh-cw"
+                        size={20}
+                        color={theme.primary}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  {loadingTrains ? (
+                    <ActivityIndicator size="small" color={theme.primary} />
+                  ) : trainPredictions.length > 0 ? (
+                    <View style={styles.trainsContainer}>
+                      {trainPredictions
+                        .slice(0, 8)
+                        .map((train: any, index: number) => (
+                          <View
+                            key={index}
+                            style={[
+                              styles.trainCard,
+                              {
+                                backgroundColor: theme.card,
+                                borderColor: theme.border,
+                              },
+                            ]}
+                          >
+                            <View style={styles.trainHeader}>
+                              <View style={styles.trainLineInfo}>
+                                <View
+                                  style={[
+                                    styles.lineBadge,
+                                    {
+                                      backgroundColor: getLineColor(train.Line),
+                                    },
+                                  ]}
+                                >
+                                  <Text style={styles.lineText}>
+                                    {train.Line}
+                                  </Text>
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                  <Text
+                                    style={[
+                                      styles.trainDestination,
+                                      { color: theme.text },
+                                    ]}
+                                  >
+                                    {train.DestinationName || train.Destination}
+                                  </Text>
+                                  {train.Group && (
+                                    <Text
+                                      style={[
+                                        styles.trainGroup,
+                                        { color: theme.textSecondary },
+                                      ]}
+                                    >
+                                      Track {train.Group}
+                                    </Text>
+                                  )}
+                                </View>
+                              </View>
+                              <View style={styles.trainMeta}>
+                                <Text
+                                  style={[
+                                    styles.trainTime,
+                                    { color: theme.primary },
+                                  ]}
+                                >
+                                  {train.Min === "ARR" || train.Min === "BRD"
+                                    ? train.Min
+                                    : `${train.Min} min`}
+                                </Text>
+                                {train.Car && (
+                                  <Text
+                                    style={[
+                                      styles.trainCars,
+                                      { color: theme.textSecondary },
+                                    ]}
+                                  >
+                                    {train.Car} cars
+                                  </Text>
+                                )}
+                              </View>
+                            </View>
+                          </View>
+                        ))}
+                    </View>
+                  ) : (
+                    <View style={styles.emptyState}>
+                      <Feather
+                        name="info"
+                        size={32}
+                        color={theme.textSecondary}
+                      />
+                      <Text
+                        style={[
+                          styles.noTrainsText,
+                          { color: theme.textSecondary },
+                        ]}
+                      >
+                        No train arrivals available
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {/* Schedule Tab */}
+              {activeTab === "timings" && (
+                <View style={styles.section}>
+                  <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                    First & Last Trains
+                  </Text>
+                  {stationTimings ? (
+                    <View style={styles.timingsContainer}>
+                      <View
+                        style={[
+                          styles.timingCard,
+                          {
+                            backgroundColor: theme.card,
+                            borderColor: theme.border,
+                          },
+                        ]}
+                      >
+                        <Feather
+                          name="sunrise"
+                          size={24}
+                          color={theme.success}
+                        />
+                        <Text
+                          style={[
+                            styles.timingLabel,
+                            { color: theme.textSecondary },
+                          ]}
+                        >
+                          First Train (Weekday)
+                        </Text>
+                        <Text
+                          style={[styles.timingValue, { color: theme.text }]}
+                        >
+                          {stationTimings.StationTimes?.[0]?.Monday
+                            ?.OpeningTime || "5:00 AM"}
+                        </Text>
+                      </View>
+                      <View
+                        style={[
+                          styles.timingCard,
+                          {
+                            backgroundColor: theme.card,
+                            borderColor: theme.border,
+                          },
+                        ]}
+                      >
+                        <Feather name="sunset" size={24} color={theme.error} />
+                        <Text
+                          style={[
+                            styles.timingLabel,
+                            { color: theme.textSecondary },
+                          ]}
+                        >
+                          Last Train (Weekday)
+                        </Text>
+                        <Text
+                          style={[styles.timingValue, { color: theme.text }]}
+                        >
+                          {stationTimings.StationTimes?.[0]?.Monday
+                            ?.LastTrainTime || "12:00 AM"}
+                        </Text>
+                      </View>
+                    </View>
+                  ) : (
+                    <View style={styles.emptyState}>
+                      <Feather
+                        name="clock"
+                        size={32}
+                        color={theme.textSecondary}
+                      />
+                      <Text
+                        style={[
+                          styles.noTrainsText,
+                          { color: theme.textSecondary },
+                        ]}
+                      >
+                        Schedule information not available
+                      </Text>
+                    </View>
+                  )}
+
+                  <View
+                    style={[styles.divider, { backgroundColor: theme.border }]}
+                  />
+
+                  <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                    Operating Hours
+                  </Text>
+                  <View
+                    style={[
+                      styles.scheduleCard,
+                      {
+                        backgroundColor: theme.card,
+                        borderColor: theme.border,
+                      },
+                    ]}
+                  >
+                    <View style={styles.infoRow}>
+                      <Feather
+                        name="calendar"
+                        size={18}
+                        color={theme.primary}
+                      />
+                      <Text style={[styles.infoText, { color: theme.text }]}>
+                        {destination.schedule}
+                      </Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                      <Feather name="clock" size={18} color={theme.primary} />
+                      <Text style={[styles.infoText, { color: theme.text }]}>
+                        {destination.operatingHours}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+
+              {/* Alerts Tab */}
+              {activeTab === "alerts" && (
+                <View style={styles.section}>
+                  <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                    Service Status
+                  </Text>
+
+                  {railIncidents.length > 0 ? (
+                    <View style={styles.alertsList}>
+                      {railIncidents.map((incident: any, index: number) => (
+                        <View
+                          key={index}
+                          style={[
+                            styles.simpleAlertCard,
+                            {
+                              backgroundColor: theme.card,
+                              borderLeftColor: "#FF9800",
+                            },
+                          ]}
+                        >
+                          <View style={styles.alertLeft}>
+                            <Feather
+                              name="alert-circle"
+                              size={20}
+                              color="#FF9800"
+                            />
+                          </View>
+                          <View style={styles.alertRight}>
+                            <Text
+                              style={[
+                                styles.alertLineText,
+                                { color: theme.text },
+                              ]}
+                            >
+                              {incident.LinesAffected}
+                            </Text>
+                            <Text
+                              style={[
+                                styles.alertMessage,
+                                { color: theme.textSecondary },
+                              ]}
+                              numberOfLines={3}
+                            >
+                              {incident.Description}
+                            </Text>
+                            {incident.DateUpdated && (
+                              <Text
+                                style={[
+                                  styles.alertTimestamp,
+                                  { color: theme.textSecondary },
+                                ]}
+                              >
+                                {new Date(
+                                  incident.DateUpdated
+                                ).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  ) : (
+                    <View
+                      style={[
+                        styles.emptyAlertState,
+                        { backgroundColor: isDark ? "#1a2d1a" : "#E8F5E9" },
+                      ]}
+                    >
+                      <Feather
+                        name="check-circle"
+                        size={28}
+                        color={theme.success}
+                      />
+                      <Text
+                        style={[styles.emptyAlertText, { color: theme.text }]}
+                      >
+                        No service alerts
+                      </Text>
+                    </View>
+                  )}
+
+                  {elevatorIncidents.length > 0 && (
+                    <>
+                      <View
+                        style={[
+                          styles.divider,
+                          { backgroundColor: theme.border },
+                        ]}
+                      />
+                      <Text
+                        style={[styles.sectionTitle, { color: theme.text }]}
+                      >
+                        Equipment Status
+                      </Text>
+                      <View style={styles.alertsList}>
+                        {elevatorIncidents.map(
+                          (incident: any, index: number) => (
+                            <View
+                              key={index}
+                              style={[
+                                styles.simpleAlertCard,
+                                {
+                                  backgroundColor: theme.card,
+                                  borderLeftColor: "#F44336",
+                                },
+                              ]}
+                            >
+                              <View style={styles.alertLeft}>
+                                <Feather
+                                  name="tool"
+                                  size={20}
+                                  color="#F44336"
+                                />
+                              </View>
+                              <View style={styles.alertRight}>
+                                <Text
+                                  style={[
+                                    styles.alertLineText,
+                                    { color: theme.text },
+                                  ]}
+                                >
+                                  {incident.UnitType}
+                                </Text>
+                                <Text
+                                  style={[
+                                    styles.alertMessage,
+                                    { color: theme.textSecondary },
+                                  ]}
+                                >
+                                  {incident.UnitName} - {incident.UnitStatus}
+                                </Text>
+                              </View>
+                            </View>
+                          )
+                        )}
+                      </View>
+                    </>
+                  )}
+                </View>
+              )}
+
+              {/* Route Info Tab */}
+              {activeTab === "route" && (
+                <View style={styles.section}>
+                  <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                    Station Information
+                  </Text>
+                  <View style={styles.transportGrid}>
+                    <View
+                      style={[
+                        styles.transportCard,
+                        {
+                          backgroundColor: theme.card,
+                          borderColor: theme.border,
+                        },
+                      ]}
+                    >
+                      <Feather
+                        name="navigation"
+                        size={24}
+                        color={theme.primary}
+                      />
+                      <Text
+                        style={[
+                          styles.transportLabel,
+                          { color: theme.textSecondary },
+                        ]}
+                      >
+                        Type
+                      </Text>
+                      <Text
+                        style={[styles.transportValue, { color: theme.text }]}
+                      >
+                        {destination.type}
+                      </Text>
+                    </View>
+                    <View
+                      style={[
+                        styles.transportCard,
+                        {
+                          backgroundColor: theme.card,
+                          borderColor: theme.border,
+                        },
+                      ]}
+                    >
+                      <Feather
+                        name="git-branch"
+                        size={24}
+                        color={theme.primary}
+                      />
+                      <Text
+                        style={[
+                          styles.transportLabel,
+                          { color: theme.textSecondary },
+                        ]}
+                      >
+                        Route
+                      </Text>
+                      <Text
+                        style={[styles.transportValue, { color: theme.text }]}
+                        numberOfLines={2}
+                      >
+                        {destination.route}
+                      </Text>
+                    </View>
+                    <View
+                      style={[
+                        styles.transportCard,
+                        {
+                          backgroundColor: theme.card,
+                          borderColor: theme.border,
+                        },
+                      ]}
+                    >
+                      <Feather
+                        name="dollar-sign"
+                        size={24}
+                        color={theme.success}
+                      />
+                      <Text
+                        style={[
+                          styles.transportLabel,
+                          { color: theme.textSecondary },
+                        ]}
+                      >
+                        Fare
+                      </Text>
+                      <Text
+                        style={[styles.transportValue, { color: theme.text }]}
+                      >
+                        {destination.fare}
+                      </Text>
+                    </View>
+                    <View
+                      style={[
+                        styles.transportCard,
+                        {
+                          backgroundColor: theme.card,
+                          borderColor: theme.border,
+                        },
+                      ]}
+                    >
+                      <Feather name="disc" size={24} color={theme.primary} />
+                      <Text
+                        style={[
+                          styles.transportLabel,
+                          { color: theme.textSecondary },
+                        ]}
+                      >
+                        Stops
+                      </Text>
+                      <Text
+                        style={[styles.transportValue, { color: theme.text }]}
+                      >
+                        {destination.stops}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {destination.features && destination.features.length > 0 && (
+                    <>
+                      <View
+                        style={[
+                          styles.divider,
+                          { backgroundColor: theme.border },
+                        ]}
+                      />
+                      <Text
+                        style={[styles.sectionTitle, { color: theme.text }]}
+                      >
+                        Amenities & Features
+                      </Text>
+                      <View style={styles.featuresGrid}>
+                        {destination.features.map(
+                          (feature: string, index: number) => (
+                            <View
+                              key={index}
+                              style={[
+                                styles.featureChip,
+                                {
+                                  backgroundColor: theme.card,
+                                  borderColor: theme.border,
+                                },
+                              ]}
+                            >
+                              <Feather
+                                name="check"
+                                size={14}
+                                color={theme.success}
+                              />
+                              <Text
+                                style={[
+                                  styles.featureText,
+                                  { color: theme.text },
+                                ]}
+                              >
+                                {feature}
+                              </Text>
+                            </View>
+                          )
+                        )}
+                      </View>
+                    </>
+                  )}
+
+                  <View
+                    style={[styles.divider, { backgroundColor: theme.border }]}
+                  />
+
+                  <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                    Description
+                  </Text>
+                  <Text
+                    style={[styles.description, { color: theme.textSecondary }]}
+                  >
+                    {destination.description}
                   </Text>
                 </View>
-              ))}
+              )}
             </View>
-          </View>
+          </>
         )}
 
-        {destination.highlights && destination.highlights.length > 0 && (
+        <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+        {destination.features && destination.features.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Highlights
+              Features & Amenities
             </Text>
-            {destination.highlights.map((item: string, index: number) => (
+            {destination.features.map((feature: string, index: number) => (
               <View key={index} style={styles.listItem}>
                 <Feather name="check-circle" size={16} color={theme.success} />
                 <Text
                   style={[styles.listItemText, { color: theme.textSecondary }]}
                 >
-                  {item}
+                  {feature}
                 </Text>
               </View>
             ))}
           </View>
         )}
 
-        {destination.tips && destination.tips.length > 0 && (
+        {destination.popularStops && destination.popularStops.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Travel Tips
+              Popular Stops
             </Text>
-            {destination.tips.map((tip: string, index: number) => (
+            {destination.popularStops.map((stop: string, index: number) => (
               <View key={index} style={styles.instructionItem}>
                 <View
                   style={[
@@ -225,270 +959,10 @@ export default function DetailsScreen() {
                     { color: theme.textSecondary },
                   ]}
                 >
-                  {tip}
+                  {stop}
                 </Text>
               </View>
             ))}
-          </View>
-        )}
-
-        {destination.schedule && destination.schedule.length > 0 && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Schedule
-            </Text>
-            {destination.schedule.map((time: string, index: number) => (
-              <View key={index} style={styles.listItem}>
-                <Feather name="calendar" size={16} color={theme.primary} />
-                <Text
-                  style={[styles.listItemText, { color: theme.textSecondary }]}
-                >
-                  {time}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        <View style={styles.infoGrid}>
-          {destination.duration && (
-            <View style={[styles.infoCard, { backgroundColor: theme.card }]}>
-              <Feather name="clock" size={24} color={theme.primary} />
-              <Text style={[styles.infoValue, { color: theme.text }]}>
-                {destination.duration}
-              </Text>
-              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
-                Duration
-              </Text>
-            </View>
-          )}
-          {destination.price && (
-            <View style={[styles.infoCard, { backgroundColor: theme.card }]}>
-              <Feather name="dollar-sign" size={24} color={theme.primary} />
-              <Text style={[styles.infoValue, { color: theme.text }]}>
-                ${destination.price}
-              </Text>
-              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
-                Price
-              </Text>
-            </View>
-          )}
-          {destination.reviewCount && (
-            <View style={[styles.infoCard, { backgroundColor: theme.card }]}>
-              <Feather name="users" size={24} color={theme.primary} />
-              <Text style={[styles.infoValue, { color: theme.text }]}>
-                {destination.reviewCount}
-              </Text>
-              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
-                Reviews
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* Real-time Bus Information */}
-        {destination.routeId && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Real-time Bus Information
-            </Text>
-            <View style={[styles.busInfoCard, { backgroundColor: theme.card }]}>
-              <View style={styles.busInfoRow}>
-                <Feather name="map-pin" size={20} color={theme.primary} />
-                <Text
-                  style={[styles.busInfoLabel, { color: theme.textSecondary }]}
-                >
-                  Route ID:
-                </Text>
-                <Text style={[styles.busInfoValue, { color: theme.text }]}>
-                  {destination.routeId}
-                </Text>
-              </View>
-
-              {destination.activeBuses !== undefined && (
-                <View style={styles.busInfoRow}>
-                  <Feather name="truck" size={20} color={theme.success} />
-                  <Text
-                    style={[
-                      styles.busInfoLabel,
-                      { color: theme.textSecondary },
-                    ]}
-                  >
-                    Active Buses:
-                  </Text>
-                  <Text style={[styles.busInfoValue, { color: theme.text }]}>
-                    {destination.activeBuses}
-                  </Text>
-                </View>
-              )}
-
-              {destination.avgDeviation !== undefined && (
-                <View style={styles.busInfoRow}>
-                  <Feather
-                    name="activity"
-                    size={20}
-                    color={
-                      destination.avgDeviation > 5
-                        ? theme.warning
-                        : theme.success
-                    }
-                  />
-                  <Text
-                    style={[
-                      styles.busInfoLabel,
-                      { color: theme.textSecondary },
-                    ]}
-                  >
-                    Avg Delay:
-                  </Text>
-                  <Text style={[styles.busInfoValue, { color: theme.text }]}>
-                    {destination.avgDeviation > 0 ? "+" : ""}
-                    {destination.avgDeviation} min
-                  </Text>
-                </View>
-              )}
-            </View>
-          </View>
-        )}
-
-        {/* Live Bus Positions */}
-        {destination.busPositions && destination.busPositions.length > 0 && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Live Bus Positions ({destination.busPositions.length})
-            </Text>
-            {destination.busPositions
-              .slice(0, 5)
-              .map((bus: any, index: number) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.busPositionCard,
-                    { backgroundColor: theme.card, borderColor: theme.border },
-                  ]}
-                >
-                  <View style={styles.busPositionHeader}>
-                    <View style={styles.busPositionLeft}>
-                      <Feather name="truck" size={20} color={theme.primary} />
-                      <Text
-                        style={[styles.busVehicleId, { color: theme.text }]}
-                      >
-                        Bus #{bus.VehicleID}
-                      </Text>
-                    </View>
-                    <View
-                      style={[
-                        styles.deviationBadge,
-                        {
-                          backgroundColor:
-                            bus.Deviation > 5
-                              ? theme.error + "20"
-                              : bus.Deviation < -5
-                              ? theme.success + "20"
-                              : theme.warning + "20",
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.deviationText,
-                          {
-                            color:
-                              bus.Deviation > 5
-                                ? theme.error
-                                : bus.Deviation < -5
-                                ? theme.success
-                                : theme.warning,
-                          },
-                        ]}
-                      >
-                        {bus.Deviation > 0 ? "+" : ""}
-                        {bus.Deviation} min
-                      </Text>
-                    </View>
-                  </View>
-
-                  <Text
-                    style={[styles.busHeadsign, { color: theme.textSecondary }]}
-                  >
-                    <Feather
-                      name="navigation"
-                      size={14}
-                      color={theme.textSecondary}
-                    />{" "}
-                    {bus.DirectionText} to {bus.TripHeadsign}
-                  </Text>
-
-                  <View style={styles.busPositionDetails}>
-                    <Text
-                      style={[
-                        styles.busDetailText,
-                        { color: theme.textSecondary },
-                      ]}
-                    >
-                      <Feather
-                        name="map"
-                        size={12}
-                        color={theme.textSecondary}
-                      />{" "}
-                      Lat: {bus.Lat.toFixed(4)}, Lon: {bus.Lon.toFixed(4)}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.busDetailText,
-                        { color: theme.textSecondary },
-                      ]}
-                    >
-                      <Feather
-                        name="clock"
-                        size={12}
-                        color={theme.textSecondary}
-                      />{" "}
-                      Updated: {new Date(bus.DateTime).toLocaleTimeString()}
-                    </Text>
-                  </View>
-                </View>
-              ))}
-
-            {destination.busPositions.length > 5 && (
-              <Text style={[styles.moreText, { color: theme.textSecondary }]}>
-                + {destination.busPositions.length - 5} more buses on this route
-              </Text>
-            )}
-          </View>
-        )}
-
-        {/* Route Stops */}
-        {destination.routeDetails && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Route Stops
-            </Text>
-            {(
-              destination.routeDetails.Direction0?.Stops ||
-              destination.routeDetails.Direction1?.Stops ||
-              []
-            )
-              .slice(0, 8)
-              .map((stop: any, index: number) => (
-                <View key={index} style={styles.stopItem}>
-                  <View
-                    style={[styles.stopDot, { backgroundColor: theme.primary }]}
-                  />
-                  <View style={styles.stopContent}>
-                    <Text style={[styles.stopName, { color: theme.text }]}>
-                      {stop.Name}
-                    </Text>
-                    {stop.StopID && stop.StopID !== "0" && (
-                      <Text
-                        style={[styles.stopId, { color: theme.textSecondary }]}
-                      >
-                        Stop ID: {stop.StopID}
-                      </Text>
-                    )}
-                  </View>
-                </View>
-              ))}
           </View>
         )}
       </View>
@@ -541,8 +1015,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
-    flex: 1,
-    marginRight: spacing.md,
+    marginBottom: spacing.xs,
+  },
+  stationCode: {
+    fontSize: fontSize.sm,
+    marginTop: spacing.xs,
+    fontFamily: "monospace",
   },
   statusBadge: {
     paddingHorizontal: spacing.md,
@@ -633,13 +1111,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: spacing.md,
   },
-  infoCard: {
-    flex: 1,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    alignItems: "center",
-    marginHorizontal: spacing.xs,
-  },
   infoValue: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
@@ -649,92 +1120,265 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     marginTop: spacing.xs,
   },
-  busInfoCard: {
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    marginTop: spacing.sm,
-  },
-  busInfoRow: {
+  transportGrid: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: spacing.sm,
+    flexWrap: "wrap",
+    gap: spacing.md,
   },
-  busInfoLabel: {
-    fontSize: fontSize.sm,
-    marginLeft: spacing.sm,
-    marginRight: spacing.xs,
-  },
-  busInfoValue: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-  },
-  busPositionCard: {
+  transportCard: {
+    flex: 1,
+    minWidth: "45%",
     padding: spacing.md,
     borderRadius: borderRadius.md,
     borderWidth: 1,
-    marginBottom: spacing.md,
-  },
-  busPositionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: spacing.sm,
-  },
-  busPositionLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  busVehicleId: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-    marginLeft: spacing.sm,
-  },
-  deviationBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
-  },
-  deviationText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
-  },
-  busHeadsign: {
-    fontSize: fontSize.sm,
-    marginBottom: spacing.sm,
-  },
-  busPositionDetails: {
     gap: spacing.xs,
   },
-  busDetailText: {
+  transportLabel: {
     fontSize: fontSize.xs,
+    marginTop: spacing.xs,
   },
-  moreText: {
-    fontSize: fontSize.sm,
-    textAlign: "center",
-    fontStyle: "italic",
-    marginTop: spacing.sm,
+  transportValue: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
   },
-  stopItem: {
+  scheduleRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     marginBottom: spacing.md,
+    gap: spacing.md,
   },
-  stopDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginTop: 4,
-    marginRight: spacing.md,
-  },
-  stopContent: {
+  scheduleContent: {
     flex: 1,
   },
-  stopName: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
+  scheduleLabel: {
+    fontSize: fontSize.sm,
     marginBottom: spacing.xs,
   },
-  stopId: {
+  scheduleValue: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.medium,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.md,
+  },
+  trainsContainer: {
+    gap: spacing.sm,
+  },
+  trainCard: {
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+  },
+  trainHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  trainLineInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    gap: spacing.sm,
+  },
+  lineBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+    minWidth: 32,
+    alignItems: "center",
+  },
+  lineText: {
+    color: "#FFFFFF",
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.bold,
+  },
+  trainDestination: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.medium,
+    flex: 1,
+  },
+  trainMeta: {
+    alignItems: "flex-end",
+  },
+  trainTime: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+  },
+  trainCars: {
     fontSize: fontSize.xs,
+    marginTop: spacing.xs,
+  },
+  noTrainsText: {
+    fontSize: fontSize.md,
+    textAlign: "center",
+    marginTop: spacing.sm,
+  },
+  tabContainer: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E5E5",
+    marginBottom: spacing.lg,
+  },
+  tab: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xs,
+    gap: spacing.xs,
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+  },
+  tabText: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.medium,
+    textAlign: "center",
+  },
+  tabContent: {
+    minHeight: 200,
+  },
+  trainGroup: {
+    fontSize: fontSize.xs,
+    marginTop: 2,
+  },
+  emptyState: {
+    alignItems: "center",
+    paddingVertical: spacing.xl,
+    gap: spacing.sm,
+  },
+  timingsContainer: {
+    flexDirection: "row",
+    gap: spacing.md,
+    marginBottom: spacing.md,
+  },
+  timingCard: {
+    flex: 1,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  timingLabel: {
+    fontSize: fontSize.xs,
+    textAlign: "center",
+  },
+  timingValue: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+  },
+  infoCard: {
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    gap: spacing.sm,
+  },
+  scheduleCard: {
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    gap: spacing.sm,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  infoText: {
+    fontSize: fontSize.md,
+    flex: 1,
+  },
+  alertsContainer: {
+    gap: spacing.md,
+  },
+  alertsList: {
+    gap: spacing.sm,
+  },
+  simpleAlertCard: {
+    flexDirection: "row",
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderLeftWidth: 3,
+    gap: spacing.md,
+  },
+  alertLeft: {
+    paddingTop: 2,
+  },
+  alertRight: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  alertLineText: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
+  },
+  alertMessage: {
+    fontSize: fontSize.sm,
+    lineHeight: 20,
+  },
+  alertTimestamp: {
+    fontSize: fontSize.xs,
+    marginTop: spacing.xs,
+  },
+  emptyAlertState: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
+    gap: spacing.sm,
+  },
+  emptyAlertText: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.medium,
+  },
+  alertCard: {
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: "#FFF",
+    borderLeftWidth: 4,
+    gap: spacing.sm,
+  },
+  alertHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  alertTitle: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
+    flex: 1,
+  },
+  alertDescription: {
+    fontSize: fontSize.sm,
+    lineHeight: 20,
+  },
+  alertTime: {
+    fontSize: fontSize.xs,
+    fontStyle: "italic",
+  },
+  featuresGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+  featureChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+    borderWidth: 1,
+    gap: spacing.xs,
+  },
+  featureText: {
+    fontSize: fontSize.sm,
   },
 });
