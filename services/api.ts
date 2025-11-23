@@ -72,10 +72,71 @@ const tflAPI = {
       return [];
     }
   },
+
+  getRouteSequence: async (lineId: string) => {
+    try {
+      const response = await axios.get(`${TFL_API_BASE_URL}/Line/${lineId}/Route/Sequence/all`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching TfL route sequence:', error);
+      return null;
+    }
+  },
+
+  getDisruptions: async (lineId: string) => {
+    try {
+      const response = await axios.get(`${TFL_API_BASE_URL}/Line/${lineId}/Disruption`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching TfL disruptions:', error);
+      return [];
+    }
+  },
 };
 
-// Transform TfL line to destination format
-const transformTfLLineToDestination = (line: any, index: number): any => {
+// Unique images for different transport lines
+const getLineImage = (lineId: string, modeName: string): string => {
+  const imageMap: { [key: string]: string } = {
+    // London Underground lines - unique images
+    'bakerloo': 'https://images.unsplash.com/photo-1543716091-a840c05249ec?w=800',
+    'central': 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800',
+    'circle': 'https://images.unsplash.com/photo-1520096449544-54ab7d54e8fd?w=800',
+    'district': 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800',
+    'hammersmith-city': 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=800',
+    'jubilee': 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=800',
+    'metropolitan': 'https://images.unsplash.com/photo-1590649880765-91b1956b8276?w=800',
+    'northern': 'https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?w=800',
+    'piccadilly': 'https://images.unsplash.com/photo-1527004013197-933c4bb611b3?w=800',
+    'victoria': 'https://images.unsplash.com/photo-1510076857177-7470076d4098?w=800',
+    'waterloo-city': 'https://images.unsplash.com/photo-1534690929166-4abb66aa2be9?w=800',
+    // Elizabeth line
+    'elizabeth': 'https://images.unsplash.com/photo-1564069114553-7215e1ff1890?w=800',
+    // Overground
+    'london-overground': 'https://images.unsplash.com/photo-1508144322886-3187947d2386?w=800',
+    // DLR
+    'dlr': 'https://images.unsplash.com/photo-1517456793572-1d8efd6dc135?w=800',
+    // Tram
+    'tram': 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=800',
+  };
+
+  // Return line-specific image or default by mode
+  if (imageMap[lineId]) return imageMap[lineId];
+  
+  // Default images by transport mode
+  const modeImages: { [key: string]: string } = {
+    'tube': 'https://images.unsplash.com/photo-1590649880765-91b1956b8276?w=800',
+    'bus': 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800',
+    'overground': 'https://images.unsplash.com/photo-1508144322886-3187947d2386?w=800',
+    'dlr': 'https://images.unsplash.com/photo-1517456793572-1d8efd6dc135?w=800',
+    'tram': 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800',
+    'river-bus': 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800',
+  };
+  
+  return modeImages[modeName] || 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800';
+};
+
+// Transform TfL line to destination format with real API data
+const transformTfLLineToDestination = (line: any, index: number, routeSeq?: any, disruptions?: any[]): any => {
   const lineId = line.id || '';
   const lineName = line.name || 'Unknown Line';
   const modeName = line.modeName || 'Transport';
@@ -94,32 +155,59 @@ const transformTfLLineToDestination = (line: any, index: number): any => {
   const lineStatuses = line.lineStatuses || [];
   const statusSeverity = lineStatuses[0]?.statusSeverity || 10;
   const statusDescription = lineStatuses[0]?.statusSeverityDescription || 'Good Service';
+  const statusReason = lineStatuses[0]?.reason || '';
   
   let status = 'Active';
   if (statusSeverity >= 10) status = 'Popular';
   else if (statusSeverity >= 6) status = 'Active';
   else status = 'Delayed';
 
-  const routeSections = line.routeSections || [];
-  const highlights = routeSections.length > 0
-    ? routeSections.slice(0, 5).map((section: any) => section.name || 'Station')
-    : [lineName, 'Multiple stops', 'Real-time updates', 'Regular service', 'City transport'];
+  // Get real stations from route sequence
+  let highlights: string[] = [];
+  if (routeSeq && routeSeq.stopPointSequences && routeSeq.stopPointSequences.length > 0) {
+    const stopPoints = routeSeq.stopPointSequences[0].stopPoint || [];
+    highlights = stopPoints.slice(0, 5).map((stop: any) => stop.name);
+  } else {
+    const routeSections = line.routeSections || [];
+    highlights = routeSections.length > 0
+      ? routeSections.slice(0, 5).map((section: any) => section.name || 'Station')
+      : [lineName, 'Multiple stops', 'Real-time updates', 'Regular service', 'City transport'];
+  }
 
+  // Build tips from real API data
   const tips = [
-    `${lineName} provides regular service across London`,
+    `${lineName} ${transportType} service across London`,
     `Current status: ${statusDescription}`,
-    'Use contactless payment or Oyster card',
-    'Check TfL app for real-time updates',
   ];
+  
+  if (statusReason) {
+    tips.push(statusReason);
+  }
+  
+  if (disruptions && disruptions.length > 0) {
+    tips.push(`${disruptions.length} active disruption(s)`);
+  } else {
+    tips.push('No current disruptions');
+  }
+  
+  tips.push('Use contactless payment or Oyster card');
+
+  // Build description with real data
+  let description = `${lineName} - ${transportType} service in London.`;
+  if (statusDescription !== 'Good Service') {
+    description += ` Current Status: ${statusDescription}.`;
+  }
+  if (statusReason) {
+    description += ` ${statusReason}`;
+  }
+  description += ' Part of Transport for London network serving millions daily.';
 
   return {
     id: index + 1,
     routeId: lineId,
     name: lineName,
-    description: `${lineName} - ${modeName} service in London. Status: ${statusDescription}. Part of Transport for London network.`,
-    image: modeName === 'tube' 
-      ? 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800'
-      : 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800',
+    description,
+    image: getLineImage(lineId, modeName),
     country: 'United Kingdom',
     city: 'London',
     rating: Math.min(5, 4.0 + (statusSeverity / 10)),
@@ -127,8 +215,11 @@ const transformTfLLineToDestination = (line: any, index: number): any => {
     transportType,
     duration: 'Varies by route',
     price: 2.80,
-    schedule: ['Daily', '5:00 AM - 1:00 AM'],
-    tags: [transportType, 'Public Transit', 'TfL', 'London'],
+    schedule: routeSeq?.serviceCalendar ? [
+      `Mon-Fri: ${routeSeq.serviceCalendar.mondayToFriday?.isAvailable ? 'Available' : 'Limited'}`,
+      `Weekend: ${routeSeq.serviceCalendar.saturday?.isAvailable ? 'Available' : 'Limited'}`,
+    ] : ['Daily', '5:00 AM - 1:00 AM'],
+    tags: [transportType, 'Public Transit', 'TfL', 'London', modeName],
     highlights,
     tips,
     reviewCount: Math.floor(Math.random() * 1000) + 500,
@@ -136,6 +227,8 @@ const transformTfLLineToDestination = (line: any, index: number): any => {
     lineStatus: statusDescription,
     statusSeverity,
     modeName,
+    disruptions: disruptions || [],
+    routeSequence: routeSeq,
   };
 };
 
@@ -270,6 +363,25 @@ export const busAPI = {
   },
 };
 
+// Get unique images for bus routes
+const getBusRouteImage = (routeId: string): string => {
+  // Hash route ID to select from image pool
+  const images = [
+    'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800',
+    'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800',
+    'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=800',
+    'https://images.unsplash.com/photo-1554672408-730f9e7e4f25?w=800',
+    'https://images.unsplash.com/photo-1581578017093-cd30197001dc?w=800',
+    'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800',
+    'https://images.unsplash.com/photo-1581578621830-d2eb68eef8cb?w=800',
+    'https://images.unsplash.com/photo-1581578949510-fa7315c4c350?w=800',
+  ];
+  
+  // Use route number to pick consistent image
+  const hash = routeId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return images[hash % images.length];
+};
+
 // Transform WMATA bus routes to our app's destination format
 const transformBusRouteToDestination = (
   route: BusRoute,
@@ -292,18 +404,28 @@ const transformBusRouteToDestination = (
     ? uniqueStops 
     : [`Route ${routeNumber}`, 'Multiple stops', 'Real-time tracking', 'Scheduled service', 'Accessible'];
 
-  // Generate tips
-  const tips = [
-    `Track real-time bus positions on route ${routeNumber}`,
-    `${activePositions.length} buses currently active on this route`,
-    'Check schedule for exact departure times',
-    'Plan your trip using the route map',
-  ];
-
   // Calculate average deviation if positions exist
   const avgDeviation = activePositions.length > 0
     ? activePositions.reduce((sum, p) => sum + Math.abs(p.Deviation), 0) / activePositions.length
     : 0;
+
+  // Generate tips with real data
+  const tips = [
+    `Route ${routeNumber}: ${route.Name}`,
+    `${activePositions.length} buses currently tracked in real-time`,
+  ];
+  
+  if (avgDeviation > 5) {
+    tips.push(`Average delay: ${Math.round(avgDeviation)} minutes`);
+  } else if (avgDeviation < -2) {
+    tips.push(`Buses running ahead of schedule`);
+  } else {
+    tips.push('Service running on time');
+  }
+  
+  if (uniqueStops.length > 0) {
+    tips.push(`${uniqueStops.length}+ stops along the route`);
+  }
 
   const status = activePositions.length > 5 ? 'Popular' : activePositions.length > 0 ? 'Active' : 'Scheduled';
   
@@ -311,12 +433,22 @@ const transformBusRouteToDestination = (
   const direction = details?.Direction0 || details?.Direction1;
   const headsign = direction?.TripHeadsign || route.Name;
   
+  // Build detailed description from API data
+  let description = `Route ${routeNumber} - ${route.Name}. `;
+  if (activePositions.length > 0) {
+    description += `${activePositions.length} buses currently running with real-time GPS tracking. `;
+  }
+  if (headsign) {
+    description += `Direction: ${headsign}. `;
+  }
+  description += 'Part of WMATA (Washington Metropolitan Area Transit Authority) serving the DC Metro area.';
+  
   return {
     id: index + 1,
     routeId: routeNumber,
     name: `${routeNumber} - ${headsign}`,
-    description: route.Name || `Bus route ${routeNumber} in Washington DC Metro area. ${activePositions.length} buses currently running.`,
-    image: `https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800`, // Generic bus image
+    description,
+    image: getBusRouteImage(routeNumber),
     country: 'USA',
     city: 'Washington DC',
     rating: Math.min(5, 4.2 + (activePositions.length * 0.1)),
@@ -379,20 +511,31 @@ export const destinationsAPI = {
 
     // Fallback to TfL API (free, no authentication)
     try {
-      console.log('Fetching Transport for London (TfL) routes as fallback...');
+      console.log('Fetching Transport for London (TfL) routes as fallback...')
       
       const lines = await tflAPI.getLines('tube,bus,overground');
       
       if (lines && lines.length > 0) {
-        console.log(`Found ${lines.length} TfL lines`);
+        console.log(`Found ${lines.length} TfL lines, fetching detailed data...`);
         
         const popularLines = lines.slice(0, 15);
         
-        const destinations = popularLines.map((line: any, index: number) => 
-          transformTfLLineToDestination(line, index)
+        // Fetch route sequences and disruptions in parallel for better details
+        const detailsPromises = popularLines.map(async (line: any) => {
+          const [routeSeq, disruptions] = await Promise.all([
+            tflAPI.getRouteSequence(line.id).catch(() => null),
+            tflAPI.getDisruptions(line.id).catch(() => []),
+          ]);
+          return { line, routeSeq, disruptions };
+        });
+        
+        const linesWithDetails = await Promise.all(detailsPromises);
+        
+        const destinations = linesWithDetails.map((data, index) => 
+          transformTfLLineToDestination(data.line, index, data.routeSeq, data.disruptions)
         );
         
-        console.log(`Successfully loaded ${destinations.length} TfL routes`);
+        console.log(`Successfully loaded ${destinations.length} TfL routes with detailed info`);
         return destinations;
       }
     } catch (error: any) {
@@ -430,12 +573,18 @@ export const destinationsAPI = {
       const line = lines[id - 1];
       
       if (line) {
-        const statusData = await tflAPI.getLineStatus(line.id).catch(() => []);
+        // Fetch detailed information
+        const [statusData, routeSeq, disruptions] = await Promise.all([
+          tflAPI.getLineStatus(line.id).catch(() => []),
+          tflAPI.getRouteSequence(line.id).catch(() => null),
+          tflAPI.getDisruptions(line.id).catch(() => []),
+        ]);
+        
         if (statusData.length > 0) {
           line.lineStatuses = statusData[0].lineStatuses;
         }
         
-        return transformTfLLineToDestination(line, id - 1);
+        return transformTfLLineToDestination(line, id - 1, routeSeq, disruptions);
       }
     } catch (error: any) {
       console.error(`TfL also failed for ID ${id}:`, error.message);
