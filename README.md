@@ -158,10 +158,6 @@ You can also create a new account through the registration screen.
 - Consistent theming throughout all screens
 - Dynamic icon and color changes
 
-## 📊 API Endpoints Used
-
-- **Authentication**: `https://dummyjson.com/auth/login`
-- **Destinations**: `https://dummyjson.com/recipes` (transformed into destinations)
 
 ## 🎨 Design Features
 
@@ -172,27 +168,8 @@ You can also create a new account through the registration screen.
 - **Cards**: Elevated cards with shadows
 - **Images**: Optimized with proper aspect ratios
 
-## 📸 Screenshots
 
-Screenshots are included in the submission showing:
 
-1. Login Screen (Light & Dark)
-2. Registration Screen
-3. Home Screen with destination list
-4. Destination Details
-5. Favorites Screen
-6. Profile Screen with dark mode toggle
-
-## 🎥 Demo Video
-
-A demo video (≤2 minutes) is included showing:
-
-- User registration/login
-- Browsing destinations
-- Viewing details
-- Adding/removing favorites
-- Dark mode toggle
-- Navigation flow
 
 ## 🔒 Security Best Practices
 
@@ -266,7 +243,7 @@ This project is for educational purposes as part of IN3210 Mobile Applications D
 
 ## 👤 Author
 
-Student submission for IN3210 Assignment 2
+Vijayanga Dissanayaka
 
 ---
 
